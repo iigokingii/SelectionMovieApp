@@ -1,0 +1,99 @@
+.movie-content-wrapper {
+    background-color: rgb(244, 243, 243);
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column; 
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 0% 10%;
+    margin: 0;
+}
+
+.movie-info-wrapper {
+    display: flex;
+    padding-top: 25px;
+    width: 100%;
+    background-color: white;
+}
+
+.movie-poster-wrapper {
+    width: 450px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 400px;
+}
+
+.movie-poster {
+    max-height: 100%;
+    max-width: 100%;
+}
+
+.movie-info {
+    margin-left: 20px;
+    width: 100%;
+}
+
+.movie-title {
+    font-size: 36px;
+    font-weight: bold;
+    color: black;
+}
+
+.movie-original-title{
+    font-size: 18px;
+    color: gray;
+    font-weight: normal;
+}
+
+.movie-about-section{
+    font-size: 20px;
+    font-weight: bold;
+    color: black;
+    margin-top: 25px;
+}
+
+.movie-details-wrapper{
+    display: flex;
+    gap:20px;
+}
+
+.movie-staff-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.movie-staff {
+    margin: 40px 0px 20px 0px;
+}
+
+.movie-actors-header {
+    margin-bottom: 10px;
+}
+
+.movie-details {
+    width: 80%;
+    max-width: 600px;
+    min-width: 280px;
+}
+
+.movie-description-wrapper{
+    background-color: white;
+    padding: 20px 0px 40px 0px;
+    width: 100%;
+}
+
+.movie-description{
+    padding: 0px 40px 0px 40px
+}
+
+.movie-comments-wrapper{
+    background-color: white;
+    padding: 20px 0px 40px 0px;
+    width: 100%;
+}
+
+.movie-add-comment-block{
+    background-color: red;
+    width: 50%;
+}

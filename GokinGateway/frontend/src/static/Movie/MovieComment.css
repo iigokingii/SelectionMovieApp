@@ -1,0 +1,31 @@
+.movie-comment-card-wrapper{
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    background-color: rgb(241, 235, 235);
+    min-width: 400px;
+    max-width: 100%;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.movie-comment-user-info-wrapper{
+    display: flex;
+    justify-content: flex-end;
+}
+
+.movie-comment-message{
+    padding: 0px 20px 20px 20px;
+}
+
+.movie-comment-date{
+    display: flex;
+    justify-content: flex-end;
+    padding: 0px 30px 20px 0px;
+}
+
+.movie-comment-header{
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 30px 20px 20px;
+}

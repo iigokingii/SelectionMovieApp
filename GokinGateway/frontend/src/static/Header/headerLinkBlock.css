@@ -1,0 +1,11 @@
+.link-wrapper{
+    border-right: 2px solid gray;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    
+}
+
+.link-wrapper:last-child {
+    border-right: none;
+}

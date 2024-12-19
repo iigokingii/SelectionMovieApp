@@ -1,0 +1,16 @@
+.movie-detail-wrapper{
+    display: flex;
+    padding-top: 10px;
+}
+
+.movie-detail-name{
+    width: 200px;
+    font-size: 14px;
+    color: gray;
+    font-weight: normal;
+}
+
+.movie-detail{
+    font-size: 14px;
+    color: black;
+}

@@ -1,0 +1,7 @@
+.main-page-wrapper{
+    display: flex;
+    background-color: white;
+    min-height: 87vh;
+    width: 100%;
+    padding: 0px 20px 20px 20px;
+}

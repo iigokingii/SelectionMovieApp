@@ -1,0 +1,9 @@
+.sign-up-prompt{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.sign-up-prompt p{
+    padding: 0px;
+    margin: 0px;
+}

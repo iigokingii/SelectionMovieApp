@@ -1,0 +1,8 @@
+.new-movie-wrapper{
+    /* height: 90.3vh; */
+    padding: 0 20px; /* Отступы по бокам */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}

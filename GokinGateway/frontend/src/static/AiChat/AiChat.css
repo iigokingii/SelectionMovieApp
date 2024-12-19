@@ -1,0 +1,199 @@
+.chat-wrapper {
+  padding: 0 20px; /* Left and right padding */
+  height: 90.3vh; /* Full height for centering */
+  display: flex;
+  justify-content: center; /* Center content horizontally */
+  align-items: center; /* Center content vertically */
+  background-color: #313131;
+}
+
+.empty-state {
+  display: flex;
+  margin-top: 80px;
+  flex-direction: column;
+  align-items: center; /* Center the content horizontally */
+  justify-content: center; /* Center the content vertically */
+  gap: 8px; /* Space between text, input, and button */
+  width: 100%;
+  text-align: center; /* Center the text */
+}
+
+
+.chat-container {
+  width: 100%;
+  max-width: 800px;
+  /* Max width for the chat */
+  background: linear-gradient(to right, #4e4e4e, #2e2e2e);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  /* Start at the top */
+  padding: 16px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  max-height: 80vh;
+  /* Maximum height to limit expansion */
+  min-height: 300px;
+  overflow: hidden;
+  /* Prevent overflow */
+}
+
+.message-list {
+  flex-grow: 1;
+  overflow-y: auto;
+  /* Enable vertical scrolling */
+  margin-bottom: 16px;
+  padding-right: 8px;
+  /* Add some space to avoid cut-off */
+}
+
+/* Custom scrollbar styles */
+.message-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.message-list::-webkit-scrollbar-thumb {
+  background: #888;
+  /* Scrollbar color */
+  border-radius: 4px;
+  /* Rounded edges */
+}
+
+.message-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+  /* Scrollbar color on hover */
+}
+
+.message-item {
+  display: flex;
+  justify-content: flex-start;
+  /* Default for bot messages */
+  margin: 8px 0;
+  /* Margin between messages */
+}
+
+.message-item.user {
+  justify-content: flex-end;
+  /* Align user messages to the right */
+}
+
+.message-bubble {
+  padding: 10px 15px;
+  border-radius: 20px;
+  max-width: 70%;
+}
+
+.message-bubble.user {
+  background-color: #4f83cc;
+  color: white;
+}
+
+.message-bubble.bot {
+  background-color: #555;
+  color: white;
+}
+
+.message-text {
+  word-break: break-word;
+}
+
+/* For rendering HTML content */
+.message-text a {
+  color: #4f83cc;
+  /* Link color */
+  text-decoration: underline;
+  /* Underline links */
+}
+
+.message-text strong {
+  font-weight: bold;
+  /* Bold text for strong */
+}
+
+.message-text sup {
+  font-size: 0.75em;
+  /* Smaller font for superscript */
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 8px;
+  background-color: #ddd;
+  /* Light gray color for input area */
+  border-radius: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.text-field {
+  background-color: transparent;
+  /* Transparent background for the input */
+  border: none;
+  border-radius: 20px;
+  flex-grow: 1;
+  padding: 5px;
+  /* Reduced padding for smaller input */
+  min-width: 120px;
+  /* Minimum width for the input */
+}
+
+.text-field .MuiOutlinedInput-root {
+  border-radius: 20px;
+  /* Round corners */
+}
+
+.send-button {
+  background-color: #4f83cc;
+  border-radius: 20px;
+  /* Rounded corners for the button */
+  color: white;
+  padding: 8px;
+  /* Reduced padding for smaller button */
+}
+
+.input-container-empty {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 8px;
+  background-color: #ddd;
+  /* Light gray color for input area */
+  border-radius: 20px;
+  width: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.placeholder-text {
+  display: inline-block; /* Минимальная ширина для текста */
+  white-space: nowrap; /* Предотвращает перенос строки */
+  overflow: hidden; /* Скрываем текст до анимации */
+  max-width: 0; /* Начальная ширина текста */
+  animation: typing 4s steps(30) 1s forwards, fade-in 1.5s ease-in; /* Добавлена анимация появления */
+  color: #bbb;
+}
+
+@keyframes typing {
+  to {
+    max-width: 100%; /* Показываем весь текст */
+  }
+}
+
+.input-container-empty {
+  opacity: 0; /* Исходное состояние - прозрачность 0 */
+  animation: fade-in 0.8s ease-in forwards; /* Анимация плавного появления */
+  animation-delay: 2.5s; /* Начало анимации после текста */
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0; /* Исходная прозрачность */
+    transform: translateY(20px); /* Сдвиг вниз для эффекта */
+  }
+  to {
+    opacity: 1; /* Полностью видимый блок */
+    transform: translateY(0); /* Сдвиг в исходное положение */
+  }
+}
+
