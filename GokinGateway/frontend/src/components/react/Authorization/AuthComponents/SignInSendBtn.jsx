@@ -9,10 +9,8 @@ import { pad } from "lodash";
 
 const SignInSendBtn = () =>{
     const navigate = useNavigate();
-    const inputValues = useSelector((state) => {
-        const { repeatpassword,username, ...rest } = state.inputReducer.inputValues; 
-        return rest; 
-    });
+    const inputValues = useSelector((state) => state.inputReducer.inputValues);
+    
 
     const email = inputValues.email;
     const password = inputValues.password;

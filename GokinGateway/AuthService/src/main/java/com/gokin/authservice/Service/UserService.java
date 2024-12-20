@@ -46,13 +46,15 @@ public class UserService {
 	}
 
 	public User GetUser(Long userId) {
-		return userRepository.findById(userId).orElse(null);
+		try {
+			return userRepository.findById(userId).orElse(null);
+		}
+		catch (UsernameNotFoundException e) {
+			throw new UsernameNotFoundException(e.getMessage());
+		}
+
 	}
 
-	public User getUserById(Long id) {
-		return userRepository.findById(id)
-				.orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + id));
-	}
 	
 	/**
 	 * Получение пользователя по имени пользователя

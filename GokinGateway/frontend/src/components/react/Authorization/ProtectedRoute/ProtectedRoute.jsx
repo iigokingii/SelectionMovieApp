@@ -16,14 +16,13 @@ const ProtectedRoute = ({ element: Component, roles, ...rest }) => {
     if (loading) {
         return <div>Loading...</div>;
     }
-    console.log(credentials);
+    
     const hasRequiredRole = roles ? roles.includes(credentials?.role) : true;
-    console.log(hasRequiredRole);
-    console.log(!hasRequiredRole);
     if (!hasRequiredRole) {
         navigate('/forbidden');
         return null;
     }
+    
     return Component;
 };
 

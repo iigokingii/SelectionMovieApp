@@ -1,4 +1,4 @@
-.movie-comment-card-wrapper{
+.movie-comment-card-wrapper {
     display: flex;
     flex-direction: column;
     margin-bottom: 20px;
@@ -9,23 +9,43 @@
     font-size: 14px;
 }
 
-.movie-comment-user-info-wrapper{
+.movie-comment-user-info-wrapper {
     display: flex;
     justify-content: flex-end;
+    align-items: center;
+    height: 33px;
 }
 
-.movie-comment-message{
+.movie-comment-message {
     padding: 0px 20px 20px 20px;
 }
 
-.movie-comment-date{
+.movie-comment-date {
     display: flex;
     justify-content: flex-end;
     padding: 0px 30px 20px 0px;
 }
 
-.movie-comment-header{
+.movie-comment-header {
     display: flex;
-    justify-content: space-between;
+    /* justify-content: space-between; */
     padding: 10px 30px 20px 20px;
 }
+
+.comment-username {
+    padding-bottom: 8px;
+}
+
+.comment-email {
+    padding-bottom: 8px;
+}
+
+.comment-avatar {
+    padding-right: 3px;
+}
+.comment-avatar img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+}
+

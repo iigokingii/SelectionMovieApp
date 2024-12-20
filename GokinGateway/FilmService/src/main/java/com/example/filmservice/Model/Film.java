@@ -87,6 +87,7 @@ public class Film {
 			joinColumns = @JoinColumn(name="film_id", nullable = false),
 			inverseJoinColumns = @JoinColumn(name="producer_id", nullable = false)
 	)
+
 	@JsonManagedReference
 	private List<Producer>producers;
 	@ManyToMany
@@ -95,10 +96,16 @@ public class Film {
 			joinColumns = @JoinColumn(name = "film_id", nullable = false),
 			inverseJoinColumns = @JoinColumn(name = "screen_writer_id", nullable = false)
 	)
+
 	@JsonManagedReference
 	private List<ScreenWriter>screenWriters;
 
-	@OneToMany(mappedBy = "film", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany
+	@JoinTable(
+			name = "film_comment",
+			joinColumns = @JoinColumn(name = "film_id", nullable = false),
+			inverseJoinColumns = @JoinColumn(name = "comment_id", nullable = false)
+	)
 	@JsonManagedReference
 	private List<Comment> comments;
 }

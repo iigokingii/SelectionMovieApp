@@ -54,24 +54,25 @@ const MovieView = () => {
     if (comment.trim()) {
       const newComment = { comment, userId:credentials.id };
       console.log(newComment);
-      // const response = await fetch(`http://localhost:8082/filmservice/api/films/film/${movieId}/comment`, {
-      //   method: 'POST',
-      //   credentials: 'include',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(newComment),
-      // });
+      const response = await fetch(`http://localhost:8082/filmservice/api/films/film/${movieId}/comment`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newComment),
+      });
 
-      // if (response.ok) {
-      //   const comment = await response.json();
-      //   dispatch(addComment(movieId, comment));
-      // }
+      if (response.ok) {
+        const comment = await response.json();
+        console.log(comment);
+        dispatch(addComment(movieId, comment));
+      }
 
-      // else {
-      //   console.log('пиздак');
-      // }
-      // setComment("");
+      else {
+        console.log('пиздак');
+      }
+      setComment("");
     }
   };
 
@@ -172,7 +173,7 @@ const MovieView = () => {
                 ? [...movie.comments]
                   .sort((a, b) => new Date(b.dateOfPosting) - new Date(a.dateOfPosting))
                   .map((comment) => (
-                    <MovieComment key={comment.id} comment={comment} />
+                    <MovieComment key={comment.id} comment={comment} movieId={movieId} />
                 ))
                 : null
             }

@@ -248,6 +248,7 @@ const NewFilm = () => {
                       textAlign: 'center',
                     }}
                   >
+                    {console.log('asd',{asd:manualMovieDetails.poster})}
                     <img
                       src={manualMovieDetails.poster}
                       alt="Превью"

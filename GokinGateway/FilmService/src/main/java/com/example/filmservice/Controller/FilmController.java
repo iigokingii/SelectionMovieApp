@@ -19,10 +19,12 @@ import java.util.Optional;
 public class FilmController {
 	@Autowired
 	FilmService filmService;
+
 	@GetMapping("")
 	public List<Film> GetFilms(){
 		return filmService.GetFilms();
 	}
+
 	@GetMapping("/{filmId}")
 	public Film GetFilm(@PathVariable Long filmId) {
 		return filmService.GetFilm(filmId);
@@ -61,6 +63,14 @@ public class FilmController {
 	@PostMapping("/{filmId}/operators")
 	public Operator AddOperator(@PathVariable Long filmId, @RequestBody PersonDTO operator){
 		return filmService.AddOperator(filmId, operator);
+	}
+
+	@PostMapping("/film/{filmId}")
+	public Film updateFilm(
+			@PathVariable Long filmId,
+			@RequestBody FilmDTO filmDetails) {
+		Film updatedFilm = filmService.updateFilm(filmId, filmDetails);
+		return updatedFilm;
 	}
 
 	@PostMapping("/{filmId}/musicians")
@@ -103,13 +113,8 @@ public class FilmController {
 		filmService.DeleteMusicianFromMovie(filmId, musicianId);
 	}
 
-	@PostMapping("/film/{filmId}")
-	public Film updateFilm(
-			@PathVariable Long filmId,
-			@RequestBody FilmDTO filmDetails) {
-		Film updatedFilm = filmService.updateFilm(filmId, filmDetails);
-		return updatedFilm;
+	@DeleteMapping("/{filmId}/comments/{commentId}")
+	public void DeleteComment(@PathVariable Long filmId, @PathVariable Long commentId) {
+		filmService.DeleteComment(filmId, commentId);
 	}
-
-
 }

@@ -23,6 +23,17 @@ const inputReducer = (state = initialState, action) => {
                     [action.payload.field]: action.payload.value,
                 },
             };
+
+        case 'RESTORE_INPUT_VALUE':
+            return{
+                ...state,
+                inputValues: {
+                    email: '',
+                    username: '',
+                    password: '',
+                    repeatpassword:'',
+                },
+            }
         case 'SET_ERROR':
             return{
                 ...state,

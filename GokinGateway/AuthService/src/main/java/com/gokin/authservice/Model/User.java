@@ -1,5 +1,6 @@
 package com.gokin.authservice.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,8 +26,9 @@ public class User implements UserDetails{
 	
 	@Column(name = "username", unique = true, nullable = false)
 	private String username;
-	
+
 	@Column(name = "password", nullable = false)
+	@JsonIgnore
 	private String password;
 	
 	@Column(name = "email", unique = true, nullable = false)
@@ -35,6 +37,29 @@ public class User implements UserDetails{
 	@Enumerated(EnumType.STRING)
 	@Column(name = "role", nullable = false)
 	private Role role;
+
+	@Column(name = "avatar", nullable = false, length = 50000)
+	private String avatar;
+
+	@JsonIgnore
+	@Transient
+	private List<GrantedAuthority> authorities;
+
+	@JsonIgnore
+	@Transient
+	private boolean accountNonExpired;
+
+	@JsonIgnore
+	@Transient
+	private boolean accountNonLocked;
+
+	@JsonIgnore
+	@Transient
+	private boolean credentialsNonExpired;
+
+	@JsonIgnore
+	@Transient
+	private boolean enabled;
 	
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {

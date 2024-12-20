@@ -7,37 +7,37 @@ import com.example.filmservice.DTO.PersonDTO;
 import com.example.filmservice.Model.*;
 import com.example.filmservice.Repository.*;
 import com.gokin.authservice.Model.User;
-import com.gokin.authservice.Repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
-	@Autowired
-	FilmRepository filmRepository;
-	@Autowired
-	ActorRepository actorRepository;
-	@Autowired
-	DirectorRepository directorRepository;
-	@Autowired
-	GenreRepository genreRepository;
-	@Autowired
-	MusicianRepository musicianRepository;
-	@Autowired
-	OperatorRepository operatorRepository;
-	@Autowired
-	ProducerRepository producerRepository;
-	@Autowired
-	ScreenWriterRepository screenWriterRepository;
-	@Autowired
-	CommentRepository commentRepository;
-	@Autowired
-	UserRepository userRepository;
-
+	@Value("${authservice.base-url}")
+	private String authServiceBaseUrl;
+	@Autowired FilmRepository filmRepository;
+	@Autowired ActorRepository actorRepository;
+	@Autowired DirectorRepository directorRepository;
+	@Autowired GenreRepository genreRepository;
+	@Autowired MusicianRepository musicianRepository;
+	@Autowired OperatorRepository operatorRepository;
+	@Autowired ProducerRepository producerRepository;
+	@Autowired ScreenWriterRepository screenWriterRepository;
+	@Autowired CommentRepository commentRepository;
+	@Autowired RestTemplate restTemplate;
+	@Autowired HttpServletRequest request;
 	public List<Film> GetFilms(){
 		return filmRepository.findAll();
 	}
@@ -142,17 +142,44 @@ public class FilmService {
 		Film film = filmRepository.findById(filmId)
 				.orElseThrow(() -> new EntityNotFoundException("Film not found"));
 
-		Comment comment = new Comment();
-		comment.setMessage(commentDTO.getComment());
-		comment.setDateOfPosting(LocalDate.now());
-		comment.setFilm(film);
-		comment.setUser();
+		String url = authServiceBaseUrl + "/api/auth/users/user/" + commentDTO.getUserId();
+
+		// Извлекаем куки из запроса пользователя
+		String cookies = extractCookies();
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("Cookie", cookies);
+
+		HttpEntity<String> entity = new HttpEntity<>(headers);
+
+		User user;
+		try {
+			ResponseEntity<User> response = restTemplate.exchange(
+					url,
+					HttpMethod.GET,
+					entity,
+					User.class
+			);
+			user = response.getBody();
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to fetch user details", e);
+		}
+
+		var comment = Comment.builder()
+				.message(commentDTO.getComment())
+				.dateOfPosting(LocalDate.now())
+				.user(user)
+				.film(film)
+				.build();
+
 		comment = commentRepository.save(comment);
-		//comment.setUser(new User());
 		film.getComments().add(comment);
 		filmRepository.save(film);
+
 		return comment;
 	}
+
+
 
 	public Genre AddGenre (Long filmId, GenreDTO genreDTO) {
 		var film = filmRepository.findById(filmId);
@@ -254,6 +281,46 @@ public class FilmService {
 		return null;
 	}
 
+	public Film updateFilm(Long filmId, FilmDTO filmDetails) {
+		Optional<Film> optionalFilm = filmRepository.findById(filmId);
+
+		Film existingFilm = optionalFilm.get();
+
+		// Обновляем все поля
+		existingFilm.setTitle(filmDetails.getTitle());
+		existingFilm.setOriginalTitle(filmDetails.getOriginal_title());
+		existingFilm.setAge(filmDetails.getAge());
+		existingFilm.setIMDBRating(filmDetails.getImdb_rating());
+		existingFilm.setKinopoiskRating(filmDetails.getKinopoisk_rating());
+		existingFilm.setTotalBoxOffice(filmDetails.getTotal_box_office());
+		existingFilm.setYearOfPosting(filmDetails.getYear_of_posting());
+		existingFilm.setCountryProduced(filmDetails.getCountry_produced());
+		existingFilm.setDescription(filmDetails.getDescription());
+		existingFilm.setDuration(filmDetails.getDuration());
+		existingFilm.setPoster(filmDetails.getPoster());
+
+		// Сохраняем изменения
+		return filmRepository.save(existingFilm);
+	}
+
+	public Comment UpdateComment(Long filmId, Long commentId, Comment comment) {
+		Optional<Film> filmOptional = filmRepository.findById(filmId);
+		Optional<Comment> commentOptional = commentRepository.findById(commentId);
+
+		if (!filmOptional.isPresent() || !commentOptional.isPresent()) {
+			return null;
+		}
+
+		Film existingFilm = filmOptional.get();
+		Comment existingComment = commentOptional.get();
+
+		existingComment.setMessage(comment.getMessage());
+
+		commentRepository.save(existingComment);
+		filmRepository.save(existingFilm);
+
+		return existingComment;
+	}
 
 	public void DeleteFilm(Long filmId) {
 		Optional<Film> deletedFilm = filmRepository.findById(filmId);
@@ -335,30 +402,26 @@ public class FilmService {
 		}
 	}
 
+	public void DeleteComment(Long filmId, Long commentId) {
+		Optional<Film> film = filmRepository.findById(filmId);
 
-	public Film updateFilm(Long filmId, FilmDTO filmDetails) {
-		Optional<Film> optionalFilm = filmRepository.findById(filmId);
-
-		Film existingFilm = optionalFilm.get();
-
-		// Обновляем все поля
-		existingFilm.setTitle(filmDetails.getTitle());
-		existingFilm.setOriginalTitle(filmDetails.getOriginal_title());
-		existingFilm.setAge(filmDetails.getAge());
-		existingFilm.setIMDBRating(filmDetails.getImdb_rating());
-		existingFilm.setKinopoiskRating(filmDetails.getKinopoisk_rating());
-		existingFilm.setTotalBoxOffice(filmDetails.getTotal_box_office());
-		existingFilm.setYearOfPosting(filmDetails.getYear_of_posting());
-		existingFilm.setCountryProduced(filmDetails.getCountry_produced());
-		existingFilm.setDescription(filmDetails.getDescription());
-		existingFilm.setDuration(filmDetails.getDuration());
-		existingFilm.setPoster(filmDetails.getPoster());
-
-		// Сохраняем изменения
-		return filmRepository.save(existingFilm);
+		if (film.isPresent()) {
+			Optional<Comment> deleteComment = commentRepository.findById(commentId);
+			if (deleteComment.isPresent()) {
+				film.get().getComments().remove(deleteComment.get());
+				filmRepository.save(film.get());
+				commentRepository.delete(deleteComment.get());
+			}
+		}
 	}
-
-
-
+	private String extractCookies() {
+		Cookie[] cookies = request.getCookies();
+		if (cookies == null) {
+			return null;
+		}
+		return Arrays.stream(cookies)
+				.map(cookie -> cookie.getName() + "=" + cookie.getValue())
+				.collect(Collectors.joining("; "));
+	}
 }
 

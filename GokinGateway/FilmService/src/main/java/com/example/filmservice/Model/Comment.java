@@ -1,5 +1,6 @@
 package com.example.filmservice.Model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.gokin.authservice.Model.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
@@ -36,7 +37,7 @@ public class Comment {
     // Связь с User
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    @JsonBackReference
+    @JsonManagedReference
     private User user;
 
 
