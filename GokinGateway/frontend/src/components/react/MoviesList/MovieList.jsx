@@ -22,6 +22,7 @@ const MovieList = () => {
     const [newItemData, setNewItemData] = useState({});
     const [currentField, setCurrentField] = useState('');
     const [currentMovieId, setCurrentMovieId] = useState(null);
+    const [popupErrors, setPopupErrors] = useState({});
     const navigate = useNavigate();
 
     const handleDelete = async (id) => {
@@ -47,7 +48,7 @@ const MovieList = () => {
 
     const handleAddItem = (fieldName, movieId) => {
         console.log('handleAddItem')
-        console.log({fieldName, movieId});
+        console.log({ fieldName, movieId });
         console.log('/handleAddItem')
         setCurrentField(fieldName);
         setCurrentMovieId(movieId);
@@ -68,7 +69,7 @@ const MovieList = () => {
             console.log('pppppppppppppppppp');
             if (!_.isEmpty(text)) {
                 const data = JSON.parse(text);
-                console.log('fieldName: ',fieldName)
+                console.log('fieldName: ', fieldName)
                 switch (fieldName) {
                     case 'genres':
                         dispatch(Actions.deleteGenre(movieId, data.id));
@@ -103,7 +104,7 @@ const MovieList = () => {
                         console.log(`Unknown field: ${fieldName}`);
                 }
             }
-            
+
         }
     };
 
@@ -114,6 +115,20 @@ const MovieList = () => {
 
     const handleModalSubmit = async () => {
         try {
+            const errors = validatePopupFields();
+            console.log('1')
+            if (!manualInput) {
+                if (errors.person || errors.genre) {
+                    setPopupErrors(errors);
+                    return;
+                }
+            } else {
+                if (Object.keys(errors).length > 0 && !errors.person && !errors.genre) {
+                    setPopupErrors(errors);
+                    return;
+                }
+            }
+            console.log('3')
             let response;
             const endpoint = `http://localhost:8082/filmservice/api/films/${currentMovieId}/${currentField}`;
             console.log(newItemData);
@@ -140,10 +155,10 @@ const MovieList = () => {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        firstName: person.name ? person.name: person.firstName,
-                        lastName: person.surname ? person.surname: person.lastName,
-                        middleName: person.middleName ? person.middleName: person.middleName,
-                        birthDate: person.birthday ? person.birthday: person.dateOfBirth,
+                        firstName: person.name ? person.name : person.firstName,
+                        lastName: person.surname ? person.surname : person.lastName,
+                        middleName: person.middleName ? person.middleName : person.middleName,
+                        birthDate: person.birthday ? person.birthday : person.dateOfBirth,
                     }),
                 });
             }
@@ -196,6 +211,7 @@ const MovieList = () => {
 
                 }
                 handleModalClose();
+                setPopupErrors({});
             }
         } catch (error) {
             console.error('Error adding new item:', error);
@@ -214,6 +230,66 @@ const MovieList = () => {
             setNewItemData({ ...newItemData, person: selectedItem });
         }
     };
+
+    const validatePopupFields = () => {
+        const errors = {};
+        const namePattern = /^[A-Za-zА-Яа-яЁё\s]+$/;
+
+        if (currentField === 'genres') {
+            if (!newItemData.name?.trim()) {
+                errors.name = 'Название жанра не может быть пустым.';
+            } else if (newItemData.name.length > 50) {
+                errors.name = 'Название жанра не должно превышать 50 символов.';
+            }
+
+            if (!newItemData.description?.trim()) {
+                errors.description = 'Описание жанра не может быть пустым.';
+            } else if (newItemData.description.length > 200) {
+                errors.description = 'Описание жанра не должно превышать 200 символов.';
+            }
+
+            if (!newItemData.genre) {
+                errors.genre = 'Выберите жанр из списка.';
+            }
+        } else {
+            if (!newItemData.firstName?.trim()) {
+                errors.firstName = 'Имя не может быть пустым.';
+            } else if (!namePattern.test(newItemData.firstName)) {
+                errors.firstName = 'Имя может содержать только буквы и пробелы.';
+            }
+
+            if (!newItemData.lastName?.trim()) {
+                errors.lastName = 'Фамилия не может быть пустой.';
+            } else if (!namePattern.test(newItemData.lastName)) {
+                errors.lastName = 'Фамилия может содержать только буквы и пробелы.';
+            }
+
+            if (!newItemData.middleName?.trim()) {
+                errors.middleName = 'Отчество не может быть пустым.';
+            } else if (!namePattern.test(newItemData.middleName)) {
+                errors.middleName = 'Отчество может содержать только буквы и пробелы.';
+            }
+
+            if (!newItemData.dateOfBirth) {
+                errors.dateOfBirth = 'Дата рождения обязательна.';
+            } else {
+                const date = new Date(newItemData.dateOfBirth);
+                if (isNaN(date.getTime())) {
+                    errors.dateOfBirth = 'Некорректная дата рождения.';
+                } else if (date > new Date()) {
+                    errors.dateOfBirth = 'Дата рождения не может быть в будущем.';
+                }
+            }
+
+            if (!newItemData.person) {
+                errors.person = 'Выберите человека из списка.';
+            }
+        }
+
+        return errors;
+    };
+
+
 
     return (
         <React.Fragment>
@@ -341,7 +417,7 @@ const MovieList = () => {
                                     </TableCell>
                                     <TableCell align="center">${movie.totalBoxOffice.toLocaleString()}</TableCell>
                                     <TableCell align="center">
-                                        {movie.producers.map((producer,index) => (
+                                        {movie.producers.map((producer, index) => (
                                             <span key={index} style={{ display: 'inline-flex', alignItems: 'center', marginRight: 4 }}>
                                                 {producer.name}
                                                 <IconButton
@@ -509,6 +585,8 @@ const MovieList = () => {
                                             label="Genre Name"
                                             value={newItemData.name || ''}
                                             onChange={(e) => setNewItemData({ ...newItemData, name: e.target.value })}
+                                            error={!!popupErrors.name}
+                                            helperText={popupErrors.name}
                                         />
                                     </Grid>
                                     <Grid item xs={12}>
@@ -517,8 +595,11 @@ const MovieList = () => {
                                             label="Genre Description"
                                             value={newItemData.description || ''}
                                             onChange={(e) => setNewItemData({ ...newItemData, description: e.target.value })}
+                                            error={!!popupErrors.description}
+                                            helperText={popupErrors.description}
                                         />
                                     </Grid>
+
                                 </>
                             ) : (
                                 <>
@@ -528,6 +609,8 @@ const MovieList = () => {
                                             label="First Name"
                                             value={newItemData.firstName || ''}
                                             onChange={(e) => setNewItemData({ ...newItemData, firstName: e.target.value })}
+                                            error={!!popupErrors.firstName}
+                                            helperText={popupErrors.firstName}
                                         />
                                     </Grid>
                                     <Grid item xs={12}>
@@ -536,6 +619,8 @@ const MovieList = () => {
                                             label="Last Name"
                                             value={newItemData.lastName || ''}
                                             onChange={(e) => setNewItemData({ ...newItemData, lastName: e.target.value })}
+                                            error={!!popupErrors.lastName}
+                                            helperText={popupErrors.lastName}
                                         />
                                     </Grid>
                                     <Grid item xs={12}>
@@ -544,6 +629,8 @@ const MovieList = () => {
                                             label="Middle Name"
                                             value={newItemData.middleName || ''}
                                             onChange={(e) => setNewItemData({ ...newItemData, middleName: e.target.value })}
+                                            error={!!popupErrors.middleName}
+                                            helperText={popupErrors.middleName}
                                         />
                                     </Grid>
                                     <Grid item xs={12}>
@@ -556,69 +643,91 @@ const MovieList = () => {
                                             InputLabelProps={{
                                                 shrink: true,
                                             }}
+                                            error={!!popupErrors.dateOfBirth}
+                                            helperText={popupErrors.dateOfBirth}
                                         />
                                     </Grid>
+
                                 </>
                             )
                         ) : (
-                            currentField === 'genres' ? (
-                                <Grid item xs={12}>
-                                    <Select
-                                        fullWidth
-                                        value={newItemData.genre || ''}
-                                        onChange={handleSelectChange}
-                                        displayEmpty
-                                        inputProps={{ 'aria-label': 'Genre' }}
-                                    >
-                                        {options.genres.map((genre) => (
-                                            <MenuItem key={genre.id} value={genre}>
-                                                {genre.name}
+                            <Grid item xs={12}>
+                                {currentField === 'genres' ? (
+                                    <>
+                                        <Select
+                                            fullWidth
+                                            value={newItemData.genre || ''}
+                                            onChange={handleSelectChange}
+                                            displayEmpty
+                                            inputProps={{ 'aria-label': 'Genre' }}
+                                            error={!!popupErrors.genre} // Условие для отображения ошибки
+                                        >
+                                            <MenuItem value="" disabled>
+                                                Выберите жанр
                                             </MenuItem>
-                                        ))}
-                                    </Select>
-                                </Grid>
-                            ) : (
-                                <Grid item xs={12}>
-                                    <Select
-                                        fullWidth
-                                        value={newItemData.person || ''}
-                                        onChange={handleSelectChange}
-                                        displayEmpty
-                                        inputProps={{ 'aria-label': 'Person' }}
-                                    >
-                                        {currentField === 'actors' && options.actors.map((actor) => (
-                                            <MenuItem key={actor.id} value={actor}>
-                                                {actor.name} {actor.surname} {actor.middleName}
+                                            {options.genres.map((genre) => (
+                                                <MenuItem key={genre.id} value={genre}>
+                                                    {genre.name}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                        {popupErrors.genre && <span style={{ color: 'red' }}>{popupErrors.genre}</span>}
+                                    </>
+                                ) : (
+                                    <>
+                                        <Select
+                                            fullWidth
+                                            value={newItemData.person || ''}
+                                            onChange={handleSelectChange}
+                                            displayEmpty
+                                            inputProps={{ 'aria-label': 'Person' }}
+                                            error={!!popupErrors.person} // Условие для отображения ошибки
+                                        >
+                                            <MenuItem value="" disabled>
+                                                Выберите человека
                                             </MenuItem>
-                                        ))}
-                                        {currentField === 'directors' && options.directors.map((director) => (
-                                            <MenuItem key={director.id} value={director}>
-                                                {director.name} {director.surname} {director.middleName}
-                                            </MenuItem>
-                                        ))}
-                                        {currentField === 'producers' && !_.isUndefined(options.producers) && options.producers.map((producer) => (
-                                            <MenuItem key={producer.id} value={producer}>
-                                                {producer.name} {producer.surname} {producer.middleName}
-                                            </MenuItem>
-                                        ))}
-                                        {currentField === 'screenwriters' && options.screenwriters.map((screenwriter) => (
-                                            <MenuItem key={screenwriter.id} value={screenwriter}>
-                                                {screenwriter.name} {screenwriter.surname} {screenwriter.middleName}
-                                            </MenuItem>
-                                        ))}
-                                        {currentField === 'operators' && options.operators.map((operator) => (
-                                            <MenuItem key={operator.id} value={operator}>
-                                                {operator.name} {operator.surname} {operator.middleName}
-                                            </MenuItem>
-                                        ))}
-                                        {currentField === 'musicians' && options.musicians.map((musician) => (
-                                            <MenuItem key={musician.id} value={musician}>
-                                                {musician.name} {musician.surname} {musician.middleName}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </Grid>
-                            )
+                                            {currentField === 'actors' &&
+                                                options.actors.map((actor) => (
+                                                    <MenuItem key={actor.id} value={actor}>
+                                                        {actor.name} {actor.surname} {actor.middleName}
+                                                    </MenuItem>
+                                                ))}
+                                            {currentField === 'directors' &&
+                                                options.directors.map((director) => (
+                                                    <MenuItem key={director.id} value={director}>
+                                                        {director.name} {director.surname} {director.middleName}
+                                                    </MenuItem>
+                                                ))}
+                                            {currentField === 'screenwriters' &&
+                                                options.screenWriters.map((screenwriter) => (
+                                                    <MenuItem key={screenwriter.id} value={screenwriter}>
+                                                        {screenwriter.name} {screenwriter.surname} {screenwriter.middleName}
+                                                    </MenuItem>
+                                                ))}
+                                            {currentField === 'producers' &&
+                                                options.producers.map((producer) => (
+                                                    <MenuItem key={producer.id} value={producer}>
+                                                        {producer.name} {producer.surname} {producer.middleName}
+                                                    </MenuItem>
+                                                ))}
+                                            {currentField === 'operators' &&
+                                                options.operators.map((operator) => (
+                                                    <MenuItem key={operator.id} value={operator}>
+                                                        {operator.name} {operator.surname} {operator.middleName}
+                                                    </MenuItem>
+                                                ))}
+                                            {currentField === 'musicians' &&
+                                                options.musicians.map((musician) => (
+                                                    <MenuItem key={musician.id} value={musician}>
+                                                        {musician.name} {musician.surname} {musician.middleName}
+                                                    </MenuItem>
+                                                ))}
+                                        </Select>
+                                        {popupErrors.person && <span style={{ color: 'red' }}>{popupErrors.person}</span>}
+                                    </>
+                                )}
+                            </Grid>
+
                         )}
                     </Grid>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>

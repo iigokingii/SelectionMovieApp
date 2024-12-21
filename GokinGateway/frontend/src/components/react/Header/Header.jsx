@@ -15,7 +15,6 @@ const Header = () => {
 
   if (credentials?.role === 'admin') {
     links = [
-      ...links,
       { link: "/main", title: "main" },
       { link: "/movie-list", title: "movie list" },
       { link: "/add-movie", title: "add new film" },
@@ -24,7 +23,6 @@ const Header = () => {
     ];
   } else if (credentials?.role === 'user') {
     links = [
-      ...links,
       { link: "/main", title: "main" },
       { link: "/liked", title: "liked" },
       { link: "/user-details", title: "user Details" },

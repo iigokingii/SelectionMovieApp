@@ -41,7 +41,7 @@ const MovieView = () => {
     return <div>Loading...</div>;
   }
 
-  const maxCharCount = 5000;
+  const maxCharCount = 2000;
 
   const handleCommentChange = (e) => {
     if (e.target.value.length <= maxCharCount) {

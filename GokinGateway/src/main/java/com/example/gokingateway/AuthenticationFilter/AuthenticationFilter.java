@@ -28,13 +28,13 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     }
 
     public static class Config {
-        // Конфигурации фильтра, если потребуется
+
     }
 
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
-            String url = "/api/auth/validate"; // Путь для авторизации, так как baseUrl уже задан
+            String url = "/api/auth/validate";
 
             String cookies = extractCookies(exchange);
             if (cookies.isEmpty()) {
@@ -43,9 +43,8 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
             HttpHeaders headers = new HttpHeaders();
             headers.add("Cookie", cookies);
-            headers.addAll(exchange.getRequest().getHeaders());
+            //headers.addAll(exchange.getRequest().getHeaders());
 
-            // Асинхронный запрос с использованием WebClient
             return webClient.post()
                     .uri(url)
                     .headers(httpHeaders -> httpHeaders.addAll(headers))

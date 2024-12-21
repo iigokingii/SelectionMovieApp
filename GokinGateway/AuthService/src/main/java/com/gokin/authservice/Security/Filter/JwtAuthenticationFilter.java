@@ -46,8 +46,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		String refreshToken = getTokenFromCookies(request, REFRESH_TOKEN);
 		
 		if (StringUtils.isEmpty(accessToken) && StringUtils.isEmpty(refreshToken)) {
-//			response.addHeader("Location","/sign-in");
-//			response.setStatus(302);
 			filterChain.doFilter(request, response);
 			return;
 		}

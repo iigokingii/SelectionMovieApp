@@ -5,9 +5,10 @@ import com.gokin.authservice.Model.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @Getter
 @Setter
@@ -22,7 +23,7 @@ public class Comment {
     @SequenceGenerator(name = "comment_id_seq", sequenceName = "comment_id_seq", allocationSize = 1)
     private Long id;
 
-    @Column(name = "message", nullable = false, length = 5000)
+    @Column(name = "message", nullable = false, length = 2000)
     private String message;
 
     @Column(name = "date_of_posting", nullable = false)
@@ -31,12 +32,14 @@ public class Comment {
     // Связь с Film
     @ManyToOne
     @JoinColumn(name = "film_id", referencedColumnName = "id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonBackReference
     private Film film;
 
     // Связь с User
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonManagedReference
     private User user;
 

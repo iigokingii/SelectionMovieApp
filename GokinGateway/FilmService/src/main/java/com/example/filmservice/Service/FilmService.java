@@ -490,6 +490,34 @@ public class FilmService {
 		return null;
 	}
 
+	public FavoriteFilm AddFavorite(FavoriteFilmDTO favorite){
+		var film = filmRepository.findById(favorite.getFilmId())
+				.orElseThrow(() -> new EntityNotFoundException("Film not found with ID: " + favorite.getFilmId()));
+
+		String url = authServiceBaseUrl + "/api/auth/users/user/" + favorite.getUserId();
+
+		String cookies = extractCookies();
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("Cookie", cookies);
+
+		HttpEntity<String> entity = new HttpEntity<>(headers);
+
+		User user;
+		try {
+			ResponseEntity<User> response = restTemplate.exchange(
+					url,
+					HttpMethod.GET,
+					entity,
+					User.class
+			);
+			user = response.getBody();
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to fetch user details", e);
+		}
+
+
+	}
 
 	private String extractCookies() {
 		Cookie[] cookies = request.getCookies();

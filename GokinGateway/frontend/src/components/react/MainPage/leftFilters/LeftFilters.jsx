@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import {
   TextField,
   FormControl,
@@ -8,19 +9,21 @@ import {
   Slider,
   Box,
   Typography,
+  CircularProgress,
 } from '@mui/material';
 
 const LeftFilters = ({ search, setSearch, genre, setGenre, duration, setDuration, rating, setRating }) => {
-  const genres = [
-    'Action',
-    'Comedy',
-    'Drama',
-    'Fantasy',
-    'Horror',
-    'Romance',
-    'Sci-Fi',
-    'Thriller',
-  ];
+  const movieOptions = useSelector(state => state.movieOptionsReducer.movieOptions);
+
+  const [genres, setGenres] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (movieOptions) {
+      setGenres(movieOptions.genres);
+      setLoading(false);
+    }
+  }, [movieOptions]);
 
   const handleSearchChange = (event) => {
     setSearch(event.target.value);
@@ -38,9 +41,16 @@ const LeftFilters = ({ search, setSearch, genre, setGenre, duration, setDuration
     setRating(newValue);
   };
 
+  if (loading) {
+    return (
+      <Box sx={{ padding: 2, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
-    <Box sx={{ padding: 2, display: 'flex', flexDirection: 'column', gap: 3}}>
-      {/* Search Field */}
+    <Box sx={{ padding: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
       <TextField
         label="Search by Title"
         variant="outlined"
@@ -48,23 +58,23 @@ const LeftFilters = ({ search, setSearch, genre, setGenre, duration, setDuration
         onChange={handleSearchChange}
         fullWidth
       />
-
-      {/* Genre Filter */}
       <FormControl fullWidth>
         <InputLabel>Genre</InputLabel>
         <Select value={genre} onChange={handleGenreChange} label="Genre">
           <MenuItem value="">
             <em>None</em>
           </MenuItem>
-          {genres.map((genre) => (
-            <MenuItem key={genre} value={genre}>
-              {genre}
-            </MenuItem>
-          ))}
+          {genres && genres.length > 0 ? (
+            genres.map((genre) => (
+              <MenuItem key={genre.id} value={genre.name}>
+                {genre.name}
+              </MenuItem>
+            ))
+          ) : (
+            <MenuItem disabled>No genres available</MenuItem>
+          )}
         </Select>
       </FormControl>
-
-      {/* Duration Filter */}
       <Box>
         <Typography gutterBottom>Duration (minutes)</Typography>
         <Slider
@@ -75,8 +85,6 @@ const LeftFilters = ({ search, setSearch, genre, setGenre, duration, setDuration
           max={300}
         />
       </Box>
-
-      {/* Rating Filter */}
       <Box>
         <Typography gutterBottom>Rating</Typography>
         <Slider

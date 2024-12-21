@@ -4,6 +4,7 @@ import com.example.filmservice.DTO.*;
 import com.example.filmservice.Model.*;
 import com.example.filmservice.Service.FilmService;
 import jakarta.validation.Valid;
+import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -133,6 +134,16 @@ public class FilmController {
 	@DeleteMapping("/{filmId}/producers/{producerId}")
 	public Producer DeleteProducerFromMovie(@PathVariable Long filmId, @PathVariable Long producerId) {
 		return filmService.DeleteProducerFromMovie(filmId, producerId);
+	}
+
+	@GetMapping("/favorites/{userId}")
+	public List<FavoriteFilm> GetFavoritesOfUser(@PathVariable Long userId){
+		throw new NotImplementedException();
+	}
+
+	@GetMapping("/add-favorite")
+	public FavoriteFilm AddFavorite(@RequestBody FavoriteFilmDTO favorite){
+		return filmService.AddFavorite(favorite);
 	}
 }
 

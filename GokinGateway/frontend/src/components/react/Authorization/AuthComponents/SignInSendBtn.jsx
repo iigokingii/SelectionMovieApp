@@ -1,34 +1,50 @@
-import React from "react";
+import React,  { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import {setError } from '../../../redux/Input/action'
+import { setError } from '../../../redux/Input/action'
 import SendIcon from '@mui/icons-material/Send';
 import Button from '@mui/material/Button';
 import { setCredentials } from "../../../redux/Auth/Action";
-import { pad } from "lodash";
 
-const SignInSendBtn = () =>{
+const SignInSendBtn = () => {
     const navigate = useNavigate();
     const inputValues = useSelector((state) => state.inputReducer.inputValues);
-    
+
 
     const email = inputValues.email;
     const password = inputValues.password;
     const dispatch = useDispatch();
-    const handleError=(field,errorMsg)=>{
-        dispatch(setError(field,errorMsg));
+    const handleError = (field, errorMsg) => {
+        dispatch(setError(field, errorMsg));
     }
+    useEffect(() => {
+        return () => {
+            handleError('emailError', '');
+            handleError('usernameError', '');
+            handleError('passwordError', '');
+            handleError('passwordsError', '');
+        };
+    }, [navigate, dispatch]);
 
     const handleSubmit = async () => {
         try {
-            const emailError = email === '' ? 'Email field is empty.' : '';
-            const passwordError = password===''?'Password is empty.':'';
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            const emailError = email === ''
+                ? 'Поле email пустое.'
+                : !emailRegex.test(email)
+                    ? 'Неверный формат email.'
+                    : '';
+            const passwordError = password === ''
+                ? 'Поле с паролем пустое.'
+                : password.length < 4
+                    ? 'Минимальный размер пароля 4 символа.'
+                    : '';
 
             handleError('emailError', emailError);
             handleError('passwordError', passwordError);
 
             if (emailError || passwordError) {
-                return; 
+                return;
             }
 
             const response = await fetch('http://localhost:8082/authservice/api/auth/sign-in', {
@@ -43,30 +59,32 @@ const SignInSendBtn = () =>{
             if (!response.ok) {
                 const error = await response.json();
                 console.log(error);
-                if(error.error.includes("emailError"))
-                    handleError('emailError',error.message);
-                if(error.error.includes("credentials")){
-                    handleError('emailError',error.message);
-                    handleError('passwordError',error.message);
+
+                if (error.error.includes("emailError")) {
+                    handleError('emailError', error.message);
                 }
-                else
+
+                if (error.error.includes("credentials")) {
+                    handleError('emailError', error.message);
+                    handleError('passwordError', error.message);
+                } else {
                     throw new Error(error.message || 'Unknown error occurred');
-            }
-            else{
+                }
+            } else {
                 const credentials = await response.json();
-                dispatch(setCredentials(credentials))
+                dispatch(setCredentials(credentials));
                 console.log('Success:', credentials);
                 navigate('/main');
             }
-        }   
-        catch (error) {
+        } catch (error) {
             console.error('Error:', error);
         }
     };
 
-    return(
+
+    return (
         <div className="send-btn-wrapper">
-            <Button sx={{width:'100px', marginTop:'10px'}} variant="contained" onClick={handleSubmit} endIcon={<SendIcon/>} size="small">
+            <Button sx={{ width: '100px', marginTop: '10px' }} variant="contained" onClick={handleSubmit} endIcon={<SendIcon />} size="small">
                 Send
             </Button>
         </div>

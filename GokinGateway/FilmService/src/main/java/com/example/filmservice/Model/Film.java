@@ -29,7 +29,7 @@ public class Film {
 	private Date yearOfPosting;
 	@Column(name = "country_produced", nullable = false)
 	private String countryProduced;
-	@Column(name = "description", nullable = false, length = 5000)
+	@Column(name = "description", nullable = false, length = 2000)
 	private String description;
 	@Column(name = "kinopoisk_rating", nullable = false)
 	private float kinopoiskRating;
