@@ -56,8 +56,8 @@ public class AuthController {
 	}
 
 	@PostMapping("/auth/validate")
-	public String validateToken(@RequestHeader("Authorization") String token) {
-		return "valid";
+	public boolean validateToken() {
+		return true;
 	}
 
 	@GetMapping("/auth/users")
