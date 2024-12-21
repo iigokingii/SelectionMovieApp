@@ -138,12 +138,14 @@ public class FilmController {
 
 	@GetMapping("/favorites/{userId}")
 	public List<FavoriteFilm> GetFavoritesOfUser(@PathVariable Long userId){
-		throw new NotImplementedException();
+		return filmService.GetFavoritesOfUser(userId);
 	}
 
-	@GetMapping("/add-favorite")
+	@PostMapping("/favorites")
 	public FavoriteFilm AddFavorite(@RequestBody FavoriteFilmDTO favorite){
 		return filmService.AddFavorite(favorite);
 	}
+
+	@DeleteMapping("/favorites/{favoriteId}")
 }
 

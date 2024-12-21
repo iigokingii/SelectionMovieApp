@@ -35,6 +35,8 @@ public class FilmService {
 	@Autowired CommentRepository commentRepository;
 	@Autowired RestTemplate restTemplate;
 	@Autowired HttpServletRequest request;
+	@Autowired FavoriteFilmRepository favoriteFilmRepository;
+
 	public MovieOptionsDTO GetOptions(){
 		return MovieOptionsDTO.builder()
 				.Actors(actorRepository.findAll())
@@ -515,8 +517,12 @@ public class FilmService {
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to fetch user details", e);
 		}
+		var favoriteFilm = FavoriteFilm.builder().film(film).user(user).addedAt(new Date()).build();
+		return favoriteFilmRepository.save(favoriteFilm);
+	}
 
-
+	public List<FavoriteFilm> GetFavoritesOfUser(Long userId){
+		return favoriteFilmRepository.findByUserId(userId);
 	}
 
 	private String extractCookies() {
