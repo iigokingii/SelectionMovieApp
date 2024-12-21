@@ -1,9 +1,6 @@
 package com.example.filmservice.Service;
 
-import com.example.filmservice.DTO.CommentDTO;
-import com.example.filmservice.DTO.FilmDTO;
-import com.example.filmservice.DTO.GenreDTO;
-import com.example.filmservice.DTO.PersonDTO;
+import com.example.filmservice.DTO.*;
 import com.example.filmservice.Model.*;
 import com.example.filmservice.Repository.*;
 import com.gokin.authservice.Model.User;
@@ -38,6 +35,18 @@ public class FilmService {
 	@Autowired CommentRepository commentRepository;
 	@Autowired RestTemplate restTemplate;
 	@Autowired HttpServletRequest request;
+	public MovieOptionsDTO GetOptions(){
+		return MovieOptionsDTO.builder()
+				.Actors(actorRepository.findAll())
+				.Directors(directorRepository.findAll())
+				.Genres(genreRepository.findAll())
+				.Musicians(musicianRepository.findAll())
+				.Operators(operatorRepository.findAll())
+				.ScreenWriters(screenWriterRepository.findAll())
+				.Producers(producerRepository.findAll())
+				.build();
+	}
+
 	public List<Film> GetFilms(){
 		return filmRepository.findAll();
 	}
@@ -48,72 +57,6 @@ public class FilmService {
 	}
 
 	public Film AddFilm(FilmDTO film){
-		var actor = Actor.builder()
-				.name("sda")
-				.middleName("ss")
-				//.avatar(new byte[]{12})
-				.birthday(LocalDate.now())
-				.surname("qwe")
-				.build();
-		actorRepository.save(actor);
-
-		var director = Director.builder()
-				.name("sda")
-				.middleName("ss")
-				//.avatar(new byte[]{12})
-				.birthday(LocalDate.now())
-				.surname("qwe")
-				.build();
-		directorRepository.save(director);
-
-		var genre = Genre.builder()
-				.name("Boevik")
-				.description("zxczxczxc")
-				.build();
-		genreRepository.save(genre);
-
-		var musician = Musician.builder()
-				.name("sda")
-				.middleName("ss")
-				//.avatar(new byte[]{12})
-				.birthday(LocalDate.now())
-				.surname("qwe")
-				.build();
-		musicianRepository.save(musician);
-
-		var operator = Operator.builder()
-				.name("sda")
-				.middleName("ss")
-				//.avatar(new byte[]{12})
-				.birthday(LocalDate.now())
-				.surname("qwe")
-				.build();
-		operatorRepository.save(operator);
-
-		var producer = Producer.builder()
-				.name("sda")
-				.middleName("ss")
-				//.avatar(new byte[]{12})
-				.birthday(LocalDate.now())
-				.surname("qwe")
-				.build();
-		producerRepository.save(producer);
-
-		var screenWriter = ScreenWriter.builder()
-				.name("sda")
-				.middleName("ss")
-				//.avatar(new byte[]{12})
-				.birthday(LocalDate.now())
-				.surname("qwe")
-				.build();
-		screenWriterRepository.save(screenWriter);
-
-		var comment = Comment.builder()
-				.message("sdaasdasdasdasd")
-				.dateOfPosting(LocalDate.now())
-				.build();
-		commentRepository.save(comment);
-
 		var filmGenerated = Film.builder()
 				.Age(film.getAge())
 				.description(film.getDescription())
@@ -179,105 +122,156 @@ public class FilmService {
 		return comment;
 	}
 
-
-
-	public Genre AddGenre (Long filmId, GenreDTO genreDTO) {
+	public Genre AddGenre(Long filmId, GenreDTO genreDTO) {
 		var film = filmRepository.findById(filmId);
-		if(film.isPresent()){
-			var genre = Genre.builder()
-					.name(genreDTO.getName())
-					.description(genreDTO.getDescription())
-					.build();
-			var savedgenre = genreRepository.save(genre);
-			film.get().getGenres().add(savedgenre);
-			filmRepository.save(film.get());
-			return savedgenre;
+		if (film.isPresent()) {
+			Optional<Genre> existingGenre = genreRepository.findByName(genreDTO.getName());
+
+			Genre genre = existingGenre.orElseGet(() -> {
+				var newGenre = Genre.builder()
+						.name(genreDTO.getName())
+						.description(genreDTO.getDescription())
+						.build();
+				return genreRepository.save(newGenre);
+			});
+
+			if (!film.get().getGenres().contains(genre)) {
+				film.get().getGenres().add(genre);
+				filmRepository.save(film.get());
+				return genre;
+			}
 		}
+
 		return null;
 	}
 
 	public Director AddDirector(Long filmId, PersonDTO directorDTO) {
 		var film = filmRepository.findById(filmId);
 		if (film.isPresent()) {
-			var director = Director.builder()
-					.name(directorDTO.getFirstName())
-					.surname(directorDTO.getLastName())
-					.middleName(directorDTO.getMiddleName())
-					.birthday(directorDTO.getBirthDate())
-					.build();
-			var savedDirector = directorRepository.save(director);
-			film.get().getDirectors().add(savedDirector);
-			filmRepository.save(film.get());
-			return savedDirector;
+			Optional<Director> existingDirector = directorRepository.findByNameAndSurnameAndMiddleNameAndBirthday(
+					directorDTO.getFirstName(), directorDTO.getLastName(), directorDTO.getMiddleName(), directorDTO.getBirthDate());
+
+			Director director = existingDirector.orElseGet(() -> {
+				var newDirector = Director.builder()
+						.name(directorDTO.getFirstName())
+						.surname(directorDTO.getLastName())
+						.middleName(directorDTO.getMiddleName())
+						.birthday(directorDTO.getBirthDate())
+						.build();
+				return directorRepository.save(newDirector);
+			});
+
+			if (!film.get().getDirectors().contains(director)) {
+				film.get().getDirectors().add(director);
+				filmRepository.save(film.get());
+				return director;
+			}
 		}
+
 		return null;
 	}
 
 	public Actor AddActor(Long filmId, PersonDTO actorDTO) {
 		var film = filmRepository.findById(filmId);
 		if (film.isPresent()) {
-			var actor = Actor.builder()
-					.name(actorDTO.getFirstName())
-					.surname(actorDTO.getLastName())
-					.middleName(actorDTO.getMiddleName())
-					.birthday(actorDTO.getBirthDate())
-					.build();
-			var savedActor = actorRepository.save(actor);
-			film.get().getActors().add(savedActor);
-			filmRepository.save(film.get());
-			return savedActor;
+			Optional<Actor> existingActor = actorRepository.findByNameAndSurnameAndMiddleNameAndBirthday(
+					actorDTO.getFirstName(), actorDTO.getLastName(), actorDTO.getMiddleName(), actorDTO.getBirthDate());
+
+			Actor actor = existingActor.orElseGet(() -> {
+				var newActor = Actor.builder()
+						.name(actorDTO.getFirstName())
+						.surname(actorDTO.getLastName())
+						.middleName(actorDTO.getMiddleName())
+						.birthday(actorDTO.getBirthDate())
+						.build();
+				return actorRepository.save(newActor);
+			});
+
+			if (!film.get().getActors().contains(actor)) {
+				film.get().getActors().add(actor);
+				filmRepository.save(film.get());
+				return actor;
+			}
 		}
+
 		return null;
 	}
 
 	public ScreenWriter AddScreenwriter(Long filmId, PersonDTO screenwriterDTO) {
 		var film = filmRepository.findById(filmId);
 		if (film.isPresent()) {
-			var screenwriter = ScreenWriter.builder()
-					.name(screenwriterDTO.getFirstName())
-					.surname(screenwriterDTO.getLastName())
-					.middleName(screenwriterDTO.getMiddleName())
-					.birthday(screenwriterDTO.getBirthDate())
-					.build();
-			var savedScreenwriter = screenWriterRepository.save(screenwriter);
-			film.get().getScreenWriters().add(savedScreenwriter);
-			filmRepository.save(film.get());
-			return savedScreenwriter;
+			Optional<ScreenWriter> existingScreenwriter = screenWriterRepository.findByNameAndSurnameAndMiddleNameAndBirthday(
+					screenwriterDTO.getFirstName(), screenwriterDTO.getLastName(), screenwriterDTO.getMiddleName(), screenwriterDTO.getBirthDate());
+
+			ScreenWriter screenwriter = existingScreenwriter.orElseGet(() -> {
+				var newScreenwriter = ScreenWriter.builder()
+						.name(screenwriterDTO.getFirstName())
+						.surname(screenwriterDTO.getLastName())
+						.middleName(screenwriterDTO.getMiddleName())
+						.birthday(screenwriterDTO.getBirthDate())
+						.build();
+				return screenWriterRepository.save(newScreenwriter);
+			});
+
+			if (!film.get().getScreenWriters().contains(screenwriter)) {
+				film.get().getScreenWriters().add(screenwriter);
+				filmRepository.save(film.get());
+				return screenwriter;
+			}
 		}
+
 		return null;
 	}
 
 	public Operator AddOperator(Long filmId, PersonDTO operatorDTO) {
 		var film = filmRepository.findById(filmId);
 		if (film.isPresent()) {
-			var operator = Operator.builder()
-					.name(operatorDTO.getFirstName())
-					.surname(operatorDTO.getLastName())
-					.middleName(operatorDTO.getMiddleName())
-					.birthday(operatorDTO.getBirthDate())
-					.build();
-			var savedOperator = operatorRepository.save(operator);
-			film.get().getOperators().add(savedOperator);
-			filmRepository.save(film.get());
-			return savedOperator;
+			Optional<Operator> existingOperator = operatorRepository.findByNameAndSurnameAndMiddleNameAndBirthday(
+					operatorDTO.getFirstName(), operatorDTO.getLastName(), operatorDTO.getMiddleName(), operatorDTO.getBirthDate());
+
+			Operator operator = existingOperator.orElseGet(() -> {
+				var newOperator = Operator.builder()
+						.name(operatorDTO.getFirstName())
+						.surname(operatorDTO.getLastName())
+						.middleName(operatorDTO.getMiddleName())
+						.birthday(operatorDTO.getBirthDate())
+						.build();
+				return operatorRepository.save(newOperator);
+			});
+
+			if (!film.get().getOperators().contains(operator)) {
+				film.get().getOperators().add(operator);
+				filmRepository.save(film.get());
+				return operator;
+			}
 		}
+
 		return null;
 	}
 
 	public Musician AddMusician(Long filmId, PersonDTO musicianDTO) {
 		var film = filmRepository.findById(filmId);
 		if (film.isPresent()) {
-			var musician = Musician.builder()
-					.name(musicianDTO.getFirstName())
-					.surname(musicianDTO.getLastName())
-					.middleName(musicianDTO.getMiddleName())
-					.birthday(musicianDTO.getBirthDate())
-					.build();
-			var savedMusician = musicianRepository.save(musician);
-			film.get().getMusicians().add(savedMusician);
-			filmRepository.save(film.get());
-			return savedMusician;
+			Optional<Musician> existingMusician = musicianRepository.findByNameAndSurnameAndMiddleNameAndBirthday(
+					musicianDTO.getFirstName(), musicianDTO.getLastName(), musicianDTO.getMiddleName(), musicianDTO.getBirthDate());
+
+			Musician musician = existingMusician.orElseGet(() -> {
+				var newMusician = Musician.builder()
+						.name(musicianDTO.getFirstName())
+						.surname(musicianDTO.getLastName())
+						.middleName(musicianDTO.getMiddleName())
+						.birthday(musicianDTO.getBirthDate())
+						.build();
+				return musicianRepository.save(newMusician);
+			});
+
+			if (!film.get().getMusicians().contains(musician)) {
+				film.get().getMusicians().add(musician);
+				filmRepository.save(film.get());
+				return musician;
+			}
 		}
+
 		return null;
 	}
 
@@ -286,7 +280,6 @@ public class FilmService {
 
 		Film existingFilm = optionalFilm.get();
 
-		// Обновляем все поля
 		existingFilm.setTitle(filmDetails.getTitle());
 		existingFilm.setOriginalTitle(filmDetails.getOriginal_title());
 		existingFilm.setAge(filmDetails.getAge());
@@ -299,26 +292,21 @@ public class FilmService {
 		existingFilm.setDuration(filmDetails.getDuration());
 		existingFilm.setPoster(filmDetails.getPoster());
 
-		// Сохраняем изменения
 		return filmRepository.save(existingFilm);
 	}
 
-	public Comment UpdateComment(Long filmId, Long commentId, Comment comment) {
+	public Comment UpdateComment(Long filmId, Long commentId, CommentDTO comment) {
 		Optional<Film> filmOptional = filmRepository.findById(filmId);
 		Optional<Comment> commentOptional = commentRepository.findById(commentId);
-
 		if (!filmOptional.isPresent() || !commentOptional.isPresent()) {
 			return null;
 		}
 
 		Film existingFilm = filmOptional.get();
 		Comment existingComment = commentOptional.get();
-
-		existingComment.setMessage(comment.getMessage());
-
+		existingComment.setMessage(comment.getComment());
 		commentRepository.save(existingComment);
 		filmRepository.save(existingFilm);
-
 		return existingComment;
 	}
 
@@ -330,7 +318,7 @@ public class FilmService {
 		}
 	}
 
-	public void DeleteGenreFromMovie(Long filmId, Long genreId) {
+	public Genre DeleteGenreFromMovie(Long filmId, Long genreId) {
 		Optional<Film> film = filmRepository.findById(filmId);
 
 		if (film.isPresent()) {
@@ -338,11 +326,18 @@ public class FilmService {
 			if (deleteGenre.isPresent()) {
 				film.get().getGenres().remove(deleteGenre.get());
 				filmRepository.save(film.get());
+
+				if (filmRepository.countByGenres(deleteGenre.get()) == 0) {
+					genreRepository.delete(deleteGenre.get());
+					return deleteGenre.get();
+				}
+				return deleteGenre.get();
 			}
 		}
+		return null;
 	}
 
-	public void DeleteDirectorFromMovie(Long filmId, Long directorId) {
+	public Director DeleteDirectorFromMovie(Long filmId, Long directorId) {
 		Optional<Film> film = filmRepository.findById(filmId);
 
 		if (film.isPresent()) {
@@ -350,11 +345,18 @@ public class FilmService {
 			if (deleteDirector.isPresent()) {
 				film.get().getDirectors().remove(deleteDirector.get());
 				filmRepository.save(film.get());
+
+				if (filmRepository.countByDirectors(deleteDirector.get()) == 0) {
+					directorRepository.delete(deleteDirector.get());
+					return deleteDirector.get();
+				}
+				return deleteDirector.get();
 			}
 		}
+		return null;
 	}
 
-	public void DeleteActorFromMovie(Long filmId, Long actorId) {
+	public Actor DeleteActorFromMovie(Long filmId, Long actorId) {
 		Optional<Film> film = filmRepository.findById(filmId);
 
 		if (film.isPresent()) {
@@ -362,11 +364,18 @@ public class FilmService {
 			if (deleteActor.isPresent()) {
 				film.get().getActors().remove(deleteActor.get());
 				filmRepository.save(film.get());
+
+				if (filmRepository.countByActors(deleteActor.get()) == 0) {
+					actorRepository.delete(deleteActor.get());
+					return deleteActor.get();
+				}
+				return deleteActor.get();
 			}
 		}
+		return null;
 	}
 
-	public void DeleteScreenwriterFromMovie(Long filmId, Long screenwriterId) {
+	public ScreenWriter DeleteScreenwriterFromMovie(Long filmId, Long screenwriterId) {
 		Optional<Film> film = filmRepository.findById(filmId);
 
 		if (film.isPresent()) {
@@ -374,11 +383,18 @@ public class FilmService {
 			if (deleteScreenwriter.isPresent()) {
 				film.get().getScreenWriters().remove(deleteScreenwriter.get());
 				filmRepository.save(film.get());
+
+				if (filmRepository.countByScreenWriters(deleteScreenwriter.get()) == 0) {
+					screenWriterRepository.delete(deleteScreenwriter.get());
+					return deleteScreenwriter.get();
+				}
+				return deleteScreenwriter.get();
 			}
 		}
+		return null;
 	}
 
-	public void DeleteOperatorFromMovie(Long filmId, Long operatorId) {
+	public Operator DeleteOperatorFromMovie(Long filmId, Long operatorId) {
 		Optional<Film> film = filmRepository.findById(filmId);
 
 		if (film.isPresent()) {
@@ -386,11 +402,18 @@ public class FilmService {
 			if (deleteOperator.isPresent()) {
 				film.get().getOperators().remove(deleteOperator.get());
 				filmRepository.save(film.get());
+
+				if (filmRepository.countByOperators(deleteOperator.get()) == 0) {
+					operatorRepository.delete(deleteOperator.get());
+					return deleteOperator.get();
+				}
+				return deleteOperator.get();
 			}
 		}
+		return null;
 	}
 
-	public void DeleteMusicianFromMovie(Long filmId, Long musicianId) {
+	public Musician DeleteMusicianFromMovie(Long filmId, Long musicianId) {
 		Optional<Film> film = filmRepository.findById(filmId);
 
 		if (film.isPresent()) {
@@ -398,8 +421,15 @@ public class FilmService {
 			if (deleteMusician.isPresent()) {
 				film.get().getMusicians().remove(deleteMusician.get());
 				filmRepository.save(film.get());
+
+				if (filmRepository.countByMusicians(deleteMusician.get()) == 0) {
+					musicianRepository.delete(deleteMusician.get());
+					return deleteMusician.get();
+				}
+				return deleteMusician.get();
 			}
 		}
+		return null;
 	}
 
 	public void DeleteComment(Long filmId, Long commentId) {
@@ -414,6 +444,53 @@ public class FilmService {
 			}
 		}
 	}
+
+	public Producer AddProducer(Long filmId, PersonDTO producerDTO) {
+		var film = filmRepository.findById(filmId);
+		if (film.isPresent()) {
+			Optional<Producer> existingProducer = producerRepository.findByNameAndSurnameAndMiddleNameAndBirthday(
+					producerDTO.getFirstName(), producerDTO.getLastName(), producerDTO.getMiddleName(), producerDTO.getBirthDate());
+
+			Producer producer = existingProducer.orElseGet(() -> {
+				var newProducer = Producer.builder()
+						.name(producerDTO.getFirstName())
+						.surname(producerDTO.getLastName())
+						.middleName(producerDTO.getMiddleName())
+						.birthday(producerDTO.getBirthDate())
+						.build();
+				return producerRepository.save(newProducer);
+			});
+
+			if (!film.get().getProducers().contains(producer)) {
+				film.get().getProducers().add(producer);
+				filmRepository.save(film.get());
+				return producer;
+			}
+		}
+
+		return null;
+	}
+
+	public Producer DeleteProducerFromMovie(Long filmId, Long producerId) {
+		Optional<Film> film = filmRepository.findById(filmId);
+
+		if (film.isPresent()) {
+			Optional<Producer> deleteProducer = producerRepository.findById(producerId);
+			if (deleteProducer.isPresent()) {
+				film.get().getProducers().remove(deleteProducer.get());
+				filmRepository.save(film.get());
+
+				if (filmRepository.countByProducers(deleteProducer.get()) == 0) {
+					producerRepository.delete(deleteProducer.get());
+					return deleteProducer.get();
+				}
+				return deleteProducer.get();
+			}
+		}
+		return null;
+	}
+
+
 	private String extractCookies() {
 		Cookie[] cookies = request.getCookies();
 		if (cookies == null) {

@@ -23,10 +23,25 @@ export const addComment = (movieId, comment) => ({
     payload: {movieId, comment},
 })
 
-export const deleteGenre = (movieId, itemId) => ({
-    type: "DELETE_GENRE",
-    payload: {movieId, itemId}, 
-})
+export const deleteComment = (movieId, commentId) => ({
+    type: "DELETE_COMMENT",
+    payload: {movieId, commentId},
+});
+
+export const updateComment = (movieId, commentId, comment) => ({
+    type: "UPDATE_COMMENT",
+    payload: {movieId, commentId, comment},
+});
+
+export const deleteGenre = (movieId, itemId) => {
+    console.log('------');
+    console.log({movieId, itemId});
+    console.log('------');
+    return ({
+        type: "DELETE_GENRE",
+        payload: {movieId, itemId}, 
+    })
+}
 
 export const deleteDirector = (movieId, itemId) => ({
     type: "DELETE_DIRECTOR",
@@ -35,6 +50,11 @@ export const deleteDirector = (movieId, itemId) => ({
 
 export const deleteActor = (movieId, itemId) => ({
     type: "DELETE_ACTOR",
+    payload: {movieId, itemId}, 
+})
+
+export const deleteProducer = (movieId, itemId) => ({
+    type: "DELETE_PRODUCER",
     payload: {movieId, itemId}, 
 })
 
@@ -65,6 +85,11 @@ export const addDirector = (movieId, item) => ({
 
 export const addActor = (movieId, item) => ({
     type: "ADD_ACTOR",
+    payload: { movieId, item },
+})
+
+export const addProducer = (movieId, item) => ({
+    type: "ADD_PRODUCER",
     payload: { movieId, item },
 })
 

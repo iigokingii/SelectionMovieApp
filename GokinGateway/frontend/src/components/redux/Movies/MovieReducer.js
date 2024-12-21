@@ -39,10 +39,42 @@ const movieReducer = (state = initialState, action) => {
                 if (movie.id != movieId) return movie;
                 return {
                     ...movie,
-                    comments: [...movie.comments, comment]
+                    comments: [comment, ...movie.comments]
                 };
             });
 
+            return {
+                ...state,
+                movies: updatedMovies
+            };
+
+        case 'DELETE_COMMENT':
+            var { movieId, commentId } = action.payload;
+            var updatedMovies = state.movies.map((movie) => {
+                if (movie.id != movieId) return movie;
+                return {
+                    ...movie,
+                    comments: movie.comments.filter(comment => comment.id !== commentId)
+                };
+            });
+            return {
+                ...state,
+                movies: updatedMovies
+            };
+
+        case 'UPDATE_COMMENT':
+            var { movieId, commentId } = action.payload;
+            var updatedMovies = state.movies.map((movie) => {
+                if (movie.id != movieId) return movie;
+                return {
+                    ...movie,
+                    comments: movie.comments.map(comment => {
+                        if (comment.id !== commentId)
+                            return comment
+                        return action.payload.comment
+                    })
+                };
+            });
             return {
                 ...state,
                 movies: updatedMovies
@@ -92,6 +124,21 @@ const movieReducer = (state = initialState, action) => {
             return {
                 ...state,
                 movies: updatedMoviesActors
+            };
+
+        case 'DELETE_PRODUCER':
+            var { movieId, itemId } = action.payload;
+            var updatedMoviesProducers = state.movies.map((movie) => {
+                if (movie.id !== movieId) return movie;
+                return {
+                    ...movie,
+                    producers: movie.producers.filter((producer) => producer.id !== itemId)
+                };
+            });
+
+            return {
+                ...state,
+                movies: updatedMoviesProducers
             };
 
         case 'DELETE_SCREENWRITER':
@@ -182,6 +229,22 @@ const movieReducer = (state = initialState, action) => {
             return {
                 ...state,
                 movies: updatedMoviesActors
+            };
+
+        case 'ADD_PRODUCER':
+            var { movieId, item } = action.payload;
+            
+            var updatedMoviesProducers = state.movies.map((movie) => {
+                if (movie.id !== movieId) return movie;
+                return {
+                    ...movie,
+                    producers: [...movie.producers, item]
+                };
+            });
+
+            return {
+                ...state,
+                movies: updatedMoviesProducers
             };
 
         case 'ADD_SCREENWRITER':

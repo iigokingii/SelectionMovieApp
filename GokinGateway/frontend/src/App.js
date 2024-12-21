@@ -18,6 +18,7 @@ import ProtectedRoute from './components/react/Authorization/ProtectedRoute/Prot
 import { setCredentials } from './components/redux/Auth/Action';
 import Forbidden from './components/react/Forbidden/Forbidden';
 import Logout from './components/react/Logout/Logout';
+import { setMovieOptions } from './components/redux/MovieOptions/Action';
 
 function App() {
   const location = useLocation();
@@ -34,6 +35,7 @@ function App() {
         method: 'GET',
         credentials: 'include',
       });
+
       if (!response.ok) {
         throw new Error('Failed to fetch movies');
       }
@@ -46,51 +48,81 @@ function App() {
     }
   };
 
-const checkAuthCredentials = async () => {
-
-  const response = await fetch('http://localhost:8082/authservice/api/auth/credentials', {
-    method: 'GET',
-    credentials: 'include',
-  });
-  console.log(response.status);
-  if (response.status >= 300 && response.status < 400) {
-    navigate('/sign-in');
-    return;
+  const fetchOptions = async () => {
+    console.log('----');
+    try {
+      const optionsResponse = await fetch('http://localhost:8082/filmservice/api/films/options', {
+        method: 'GET',
+        credentials: 'include',
+      });
+      if (!optionsResponse.ok) {
+        throw new Error('Failed to fetch movies');
+      }
+      const options = await optionsResponse.json();
+      console.log(options);
+      dispatch(setMovieOptions(options));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  if (response.ok) {
-    const text = await response.text();
-    if (!text) {
-      console.log('No credentials returned');
+  const checkAuthCredentials = async () => {
+
+    const response = await fetch('http://localhost:8082/authservice/api/auth/credentials', {
+      method: 'GET',
+      credentials: 'include',
+    });
+    console.log(response.status);
+    if (response.status >= 300 && response.status < 400) {
+      navigate('/sign-in');
       return;
     }
 
-    const credentials = JSON.parse(text);
-    console.log(credentials);
-    dispatch(setCredentials(credentials));
-  } else {
-    console.error(`Failed to fetch credentials: ${response.status} ${response.statusText}`);
-  }
-};
-
-
-useEffect(() => {
-  const initializeApp = async () => {
-      if (_.isEmpty(userCredentials)) {
-          await checkAuthCredentials(); // Загружаем креденшиалы
+    if (response.ok) {
+      const text = await response.text();
+      if (!text) {
+        console.log('No credentials returned');
+        return;
       }
-      if (!_.isEmpty(userCredentials) && _.isEmpty(movies)) {
-          await fetchMovies(); // Загружаем фильмы, если креденшиалы загружены
-      }
-      setLoading(false); // Лоадинг завершается, только когда все необходимые данные получены
+
+      const credentials = JSON.parse(text);
+      console.log(credentials);
+      dispatch(setCredentials(credentials));
+    } else {
+      console.error(`Failed to fetch credentials: ${response.status} ${response.statusText}`);
+    }
   };
 
-  initializeApp();
-}, [userCredentials]);
 
-if (loading) {
-  return <div>Loading application...</div>;
-}
+  useEffect(() => {
+    const initializeApp = async () => {
+      try{
+        if (_.isEmpty(userCredentials)) {
+          await checkAuthCredentials();
+        }
+        if (!_.isEmpty(userCredentials) && _.isEmpty(movies)) {
+          await fetchMovies();
+          await fetchOptions();
+        }
+        setLoading(false);
+      }
+      catch (err) {
+        console.log(err.message);
+        //setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+      
+    };
+
+    initializeApp();
+  }, [userCredentials]);
+
+  if (loading) {
+    return <div>Loading application...</div>;
+  }
 
   return (
     <div className="App">

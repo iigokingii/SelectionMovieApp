@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import * as Actions from '../../redux/Movies/action';
+import * as MovieOptionsActions from '../../redux/MovieOptions/Action';
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
     Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-    CardMedia, IconButton, Tooltip, Box, Modal, TextField, Typography, Grid
+    CardMedia, IconButton, Box, Modal, TextField, Typography, Grid, Radio, RadioGroup, FormControlLabel,
+    FormControl, Select, MenuItem
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -13,44 +15,14 @@ import _ from 'lodash';
 const MovieList = () => {
     const dispatch = useDispatch();
     const movies = useSelector((state) => state.movieReducer.movies);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const options = useSelector((state) => state.movieOptionsReducer.movieOptions);
+    const [manualInput, setManualInput] = useState(true);
     const [expandedDescription, setExpandedDescription] = useState({});
     const [openModal, setOpenModal] = useState(false);
     const [newItemData, setNewItemData] = useState({});
     const [currentField, setCurrentField] = useState('');
     const [currentMovieId, setCurrentMovieId] = useState(null);
     const navigate = useNavigate();
-
-    const fetchMovies = async () => {
-        try {
-            const response = await fetch('http://localhost:8082/filmservice/api/films', {
-                method: 'GET',
-                credentials: 'include',
-            });
-            if (!response.ok) {
-                throw new Error('Failed to fetch movies');
-            }
-            const data = await response.json();
-            dispatch(Actions.setMovies(data));
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        _.isEmpty(movies) ? fetchMovies() : setLoading(false);
-    }, []);
-
-    if (loading && _.isEmpty(movies)) {
-        return <div>Loading...</div>;
-    }
-
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
 
     const handleDelete = async (id) => {
         const response = await fetch(`http://localhost:8082/filmservice/api/films/${id}`, {
@@ -74,6 +46,9 @@ const MovieList = () => {
     };
 
     const handleAddItem = (fieldName, movieId) => {
+        console.log('handleAddItem')
+        console.log({fieldName, movieId});
+        console.log('/handleAddItem')
         setCurrentField(fieldName);
         setCurrentMovieId(movieId);
         setOpenModal(true);
@@ -85,30 +60,50 @@ const MovieList = () => {
             method: 'DELETE',
             credentials: 'include',
         });
-        if (response.ok) {
-            switch (fieldName) {
-                case 'genres':
-                    dispatch(Actions.deleteGenre(movieId, itemId));
-                    break;
-                case 'directors':
-                    dispatch(Actions.deleteDirector(movieId, itemId));
-                    break;
-                case 'actors':
-                    dispatch(Actions.deleteActor(movieId, itemId));
-                    break;
-                case 'screenwriters':
-                    dispatch(Actions.deleteScreenwriter(movieId, itemId));
-                    break;
-                case 'operators':
-                    dispatch(Actions.deleteOperator(movieId, itemId));
-                    break;
-                case 'musicians':
-                    dispatch(Actions.deleteMusician(movieId, itemId));
-                    break;
 
-                default:
-                    console.log(`Unknown field: ${fieldName}`);
+        if (response.ok) {
+            const text = await response.text();
+            console.log('pppppppppppppppppp');
+            console.log(text);
+            console.log('pppppppppppppppppp');
+            if (!_.isEmpty(text)) {
+                const data = JSON.parse(text);
+                console.log('fieldName: ',fieldName)
+                switch (fieldName) {
+                    case 'genres':
+                        dispatch(Actions.deleteGenre(movieId, data.id));
+                        dispatch(MovieOptionsActions.deleteUniqueGenre(movies, data));
+                        break;
+                    case 'directors':
+                        dispatch(Actions.deleteDirector(movieId, data.id));
+                        dispatch(MovieOptionsActions.deleteUniqueDirector(movies, data));
+                        break;
+                    case 'actors':
+                        dispatch(Actions.deleteActor(movieId, data.id));
+                        dispatch(MovieOptionsActions.deleteUniqueActor(movies, data));
+                        break;
+                    case 'producers':
+                        dispatch(Actions.deleteProducer(movieId, data.id));
+                        dispatch(MovieOptionsActions.deleteUniqueProducer(movies, data));
+                        break;
+                    case 'screenwriters':
+                        dispatch(Actions.deleteScreenwriter(movieId, data.id));
+                        dispatch(MovieOptionsActions.deleteUniqueScreenwriter(movies, data));
+                        break;
+                    case 'operators':
+                        dispatch(Actions.deleteOperator(movieId, data.id));
+                        dispatch(MovieOptionsActions.deleteUniqueOperator(movies, data));
+                        break;
+                    case 'musicians':
+                        dispatch(Actions.deleteMusician(movieId, data.id));
+                        dispatch(MovieOptionsActions.deleteUniqueMusician(movies, data));
+                        break;
+
+                    default:
+                        console.log(`Unknown field: ${fieldName}`);
+                }
             }
+            
         }
     };
 
@@ -121,7 +116,7 @@ const MovieList = () => {
         try {
             let response;
             const endpoint = `http://localhost:8082/filmservice/api/films/${currentMovieId}/${currentField}`;
-
+            console.log(newItemData);
             if (currentField === 'genres') {
                 response = await fetch(endpoint, {
                     method: 'POST',
@@ -129,9 +124,15 @@ const MovieList = () => {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(newItemData),
+                    body: JSON.stringify(newItemData.genre
+                        ? newItemData.genre
+                        : newItemData),
                 });
             } else {
+                const person = newItemData.person
+                    ? newItemData.person
+                    : newItemData
+                console.log(person);
                 response = await fetch(endpoint, {
                     method: 'POST',
                     credentials: 'include',
@@ -139,55 +140,78 @@ const MovieList = () => {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        firstName: newItemData.firstName,
-                        lastName: newItemData.lastName,
-                        middleName: newItemData.middleName,
-                        birthDate: newItemData.dateOfBirth,
+                        firstName: person.name ? person.name: person.firstName,
+                        lastName: person.surname ? person.surname: person.lastName,
+                        middleName: person.middleName ? person.middleName: person.middleName,
+                        birthDate: person.birthday ? person.birthday: person.dateOfBirth,
                     }),
                 });
             }
 
             if (response.ok) {
-                const data = await response.json();
-                switch (currentField) {
-                    case 'genres':
-                        dispatch(Actions.addGenre(currentMovieId, data));
-                        break;
+                const text = await response.text();
+                console.log(text);
+                if (!_.isEmpty(text)) {
+                    const data = JSON.parse(text);
+                    switch (currentField) {
+                        case 'genres':
+                            dispatch(MovieOptionsActions.addUniqueGenre(data));
+                            dispatch(Actions.addGenre(currentMovieId, data));
+                            break;
 
-                    case 'directors':
-                        dispatch(Actions.addDirector(currentMovieId, data));
-                        break;
+                        case 'directors':
+                            dispatch(MovieOptionsActions.addUniqueDirector(data));
+                            dispatch(Actions.addDirector(currentMovieId, data));
+                            break;
 
-                    case 'actors':
-                        dispatch(Actions.addActor(currentMovieId, data));
-                        break;
+                        case 'actors':
+                            dispatch(MovieOptionsActions.addUniqueActor(data));
+                            dispatch(Actions.addActor(currentMovieId, data));
+                            break;
 
-                    case 'screenwriters':
-                        dispatch(Actions.addScreenwriter(currentMovieId, data));
-                        break;
+                        case 'producers':
+                            dispatch(MovieOptionsActions.addUniqueProducer(data));
+                            dispatch(Actions.addProducer(currentMovieId, data));
+                            break;
 
-                    case 'operators':
-                        dispatch(Actions.addOperator(currentMovieId, data));
-                        break;
+                        case 'screenwriters':
+                            dispatch(MovieOptionsActions.addUniqueScreenwriter(data));
+                            dispatch(Actions.addScreenwriter(currentMovieId, data));
+                            break;
 
-                    case 'musicians':
-                        dispatch(Actions.addMusician(currentMovieId, data));
-                        break;
+                        case 'operators':
+                            dispatch(MovieOptionsActions.addUniqueOperator(data));
+                            dispatch(Actions.addOperator(currentMovieId, data));
+                            break;
 
-                    default:
-                        console.error('Unknown field type:', currentField);
-                        break;
+                        case 'musicians':
+                            dispatch(MovieOptionsActions.addUniqueMusician(data));
+                            dispatch(Actions.addMusician(currentMovieId, data));
+                            break;
+
+                        default:
+                            console.error('Unknown field type:', currentField);
+                            break;
+                    }
+
                 }
-
                 handleModalClose();
-                console.log('------------');
-                console.log(data);
-                console.log(currentField);
-                console.log(newItemData);
-                console.log('------------');
             }
         } catch (error) {
             console.error('Error adding new item:', error);
+        }
+    };
+
+    const handleRadioChange = (event) => {
+        setManualInput(event.target.value === 'manual');
+    };
+
+    const handleSelectChange = (event) => {
+        const selectedItem = event.target.value;
+        if (currentField === 'genres') {
+            setNewItemData({ ...newItemData, genre: selectedItem });
+        } else {
+            setNewItemData({ ...newItemData, person: selectedItem });
         }
     };
 
@@ -211,6 +235,7 @@ const MovieList = () => {
                                 <TableCell align="center" sx={{ fontWeight: 'bold' }}>Actors</TableCell>
                                 <TableCell align="center" sx={{ fontWeight: 'bold' }}>Description</TableCell>
                                 <TableCell align="center" sx={{ fontWeight: 'bold' }}>Budget</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Producers</TableCell>
                                 <TableCell align="center" sx={{ fontWeight: 'bold' }}>Screenwriters</TableCell>
                                 <TableCell align="center" sx={{ fontWeight: 'bold' }}>Operators</TableCell>
                                 <TableCell align="center" sx={{ fontWeight: 'bold' }}>Musicians</TableCell>
@@ -316,8 +341,30 @@ const MovieList = () => {
                                     </TableCell>
                                     <TableCell align="center">${movie.totalBoxOffice.toLocaleString()}</TableCell>
                                     <TableCell align="center">
-                                        {movie.screenWriters.map((writer) => (
-                                            <span key={writer.name} style={{ display: 'inline-flex', alignItems: 'center', marginRight: 4 }}>
+                                        {movie.producers.map((producer,index) => (
+                                            <span key={index} style={{ display: 'inline-flex', alignItems: 'center', marginRight: 4 }}>
+                                                {producer.name}
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={() => handleRemoveItem('producers', movie.id, producer.id)}
+                                                >
+                                                    <DeleteIcon fontSize="small" />
+                                                </IconButton>
+                                            </span>
+                                        ))}
+                                        <Button
+                                            variant="outlined"
+                                            size="small"
+                                            onClick={() => handleAddItem('producers', movie.id)}
+                                            startIcon={<AddCircleOutlineIcon />}
+                                            sx={{ marginLeft: 1 }}
+                                        >
+                                            Add
+                                        </Button>
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        {movie.screenWriters.map((writer, index) => (
+                                            <span key={index} style={{ display: 'inline-flex', alignItems: 'center', marginRight: 4 }}>
                                                 {writer.name}
                                                 <IconButton
                                                     size="small"
@@ -338,8 +385,8 @@ const MovieList = () => {
                                         </Button>
                                     </TableCell>
                                     <TableCell align="center">
-                                        {movie.operators.map((operator) => (
-                                            <span key={operator.name} style={{ display: 'inline-flex', alignItems: 'center', marginRight: 4 }}>
+                                        {movie.operators.map((operator, index) => (
+                                            <span key={index} style={{ display: 'inline-flex', alignItems: 'center', marginRight: 4 }}>
                                                 {operator.name}
                                                 <IconButton
                                                     size="small"
@@ -360,8 +407,8 @@ const MovieList = () => {
                                         </Button>
                                     </TableCell>
                                     <TableCell align="center">
-                                        {movie.musicians.map((musician) => (
-                                            <span key={musician.name} style={{ display: 'inline-flex', alignItems: 'center', marginRight: 4 }}>
+                                        {movie.musicians.map((musician, index) => (
+                                            <span key={index} style={{ display: 'inline-flex', alignItems: 'center', marginRight: 4 }}>
                                                 {musician.name}
                                                 <IconButton
                                                     size="small"
@@ -422,7 +469,6 @@ const MovieList = () => {
                 </TableContainer>
             </div>
 
-            {/* Modal for adding new item */}
             <Modal
                 open={openModal}
                 onClose={handleModalClose}
@@ -445,31 +491,36 @@ const MovieList = () => {
                         Add {currentField === 'genres' ? 'Genre' : currentField.charAt(0).toUpperCase() + currentField.slice(1)} to Movie
                     </Typography>
                     <Grid container spacing={2} sx={{ marginTop: 2 }}>
-                        {currentField === 'genres' && (
-                            <>
-                                <Grid item xs={12}>
-                                    <TextField
-                                        fullWidth
-                                        label="Genre Name"
-                                        value={newItemData.name || ''}
-                                        onChange={(e) => setNewItemData({ ...newItemData, name: e.target.value })}
-                                    />
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <TextField
-                                        fullWidth
-                                        label="Genre Description"
-                                        value={newItemData.description || ''}
-                                        onChange={(e) => setNewItemData({ ...newItemData, description: e.target.value })}
-                                    />
-                                </Grid>
-                            </>
-                        )}
-                        {(currentField === 'actors' ||
-                            currentField === 'directors' ||
-                            currentField === 'screenwriters' ||
-                            currentField === 'operators' ||
-                            currentField === 'musicians') && (
+                        <Grid item xs={12}>
+                            <FormControl component="fieldset">
+                                <RadioGroup row value={manualInput ? 'manual' : 'select'} onChange={handleRadioChange}>
+                                    <FormControlLabel value="manual" control={<Radio />} label="Add Manually" />
+                                    <FormControlLabel value="select" control={<Radio />} label="Select from Options" />
+                                </RadioGroup>
+                            </FormControl>
+                        </Grid>
+
+                        {manualInput ? (
+                            currentField === 'genres' ? (
+                                <>
+                                    <Grid item xs={12}>
+                                        <TextField
+                                            fullWidth
+                                            label="Genre Name"
+                                            value={newItemData.name || ''}
+                                            onChange={(e) => setNewItemData({ ...newItemData, name: e.target.value })}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <TextField
+                                            fullWidth
+                                            label="Genre Description"
+                                            value={newItemData.description || ''}
+                                            onChange={(e) => setNewItemData({ ...newItemData, description: e.target.value })}
+                                        />
+                                    </Grid>
+                                </>
+                            ) : (
                                 <>
                                     <Grid item xs={12}>
                                         <TextField
@@ -508,7 +559,67 @@ const MovieList = () => {
                                         />
                                     </Grid>
                                 </>
-                            )}
+                            )
+                        ) : (
+                            currentField === 'genres' ? (
+                                <Grid item xs={12}>
+                                    <Select
+                                        fullWidth
+                                        value={newItemData.genre || ''}
+                                        onChange={handleSelectChange}
+                                        displayEmpty
+                                        inputProps={{ 'aria-label': 'Genre' }}
+                                    >
+                                        {options.genres.map((genre) => (
+                                            <MenuItem key={genre.id} value={genre}>
+                                                {genre.name}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </Grid>
+                            ) : (
+                                <Grid item xs={12}>
+                                    <Select
+                                        fullWidth
+                                        value={newItemData.person || ''}
+                                        onChange={handleSelectChange}
+                                        displayEmpty
+                                        inputProps={{ 'aria-label': 'Person' }}
+                                    >
+                                        {currentField === 'actors' && options.actors.map((actor) => (
+                                            <MenuItem key={actor.id} value={actor}>
+                                                {actor.name} {actor.surname} {actor.middleName}
+                                            </MenuItem>
+                                        ))}
+                                        {currentField === 'directors' && options.directors.map((director) => (
+                                            <MenuItem key={director.id} value={director}>
+                                                {director.name} {director.surname} {director.middleName}
+                                            </MenuItem>
+                                        ))}
+                                        {currentField === 'producers' && !_.isUndefined(options.producers) && options.producers.map((producer) => (
+                                            <MenuItem key={producer.id} value={producer}>
+                                                {producer.name} {producer.surname} {producer.middleName}
+                                            </MenuItem>
+                                        ))}
+                                        {currentField === 'screenwriters' && options.screenwriters.map((screenwriter) => (
+                                            <MenuItem key={screenwriter.id} value={screenwriter}>
+                                                {screenwriter.name} {screenwriter.surname} {screenwriter.middleName}
+                                            </MenuItem>
+                                        ))}
+                                        {currentField === 'operators' && options.operators.map((operator) => (
+                                            <MenuItem key={operator.id} value={operator}>
+                                                {operator.name} {operator.surname} {operator.middleName}
+                                            </MenuItem>
+                                        ))}
+                                        {currentField === 'musicians' && options.musicians.map((musician) => (
+                                            <MenuItem key={musician.id} value={musician}>
+                                                {musician.name} {musician.surname} {musician.middleName}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </Grid>
+                            )
+                        )}
                     </Grid>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
                         <Button variant="outlined" color="secondary" onClick={handleModalClose}>

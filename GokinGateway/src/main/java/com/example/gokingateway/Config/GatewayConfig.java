@@ -65,18 +65,17 @@ public class GatewayConfig {
 	public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
 		return builder.routes()
 				.route("UserService", r -> r.path("/userservice/**")
-						.filters(f -> f.filter(authenticationFilter.apply(new AuthenticationFilter.Config())))  // Используем фильтр
+						.filters(f -> f.filter(authenticationFilter.apply(new AuthenticationFilter.Config())))
 						.uri("lb://UserService"))
 				.route("AuthService", r -> r.path("/authservice/**")
 						.filters(f -> f.stripPrefix(1)
 								.filter(checkRedirectCondition()))
 						.uri("lb://AuthService"))
 				.route("SwaggerService", r -> r.path("/swaggerservice/**")
-						.filters(f -> f.filter(authenticationFilter.apply(new AuthenticationFilter.Config())))  // Используем фильтр
+						.filters(f -> f.filter(authenticationFilter.apply(new AuthenticationFilter.Config())))
 						.uri("lb://SwaggerService"))
 				.route("FilmService", r -> r.path("/filmservice/**")
-						.filters(f -> f.stripPrefix(1)
-								)
+						.filters(f -> f.stripPrefix(1))
 						.uri("lb://FilmService"))
 				.route("AiService", r -> r.path("/aiservice/**")
 						.filters(f -> f.stripPrefix(1)
