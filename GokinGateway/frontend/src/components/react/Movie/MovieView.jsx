@@ -12,7 +12,6 @@ import Header from '../Header/Header';
 
 const MovieView = () => {
   const { movieId } = useParams();
-  console.log(movieId);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const movies = useSelector((state) => state.movieReducer.movies);
@@ -28,9 +27,6 @@ const MovieView = () => {
     }
 
     const findMovie = movies.find((m) => m.id == movieId);
-
-    console.log(movies);
-    console.log(findMovie);
     if(findMovie){
       setMovie(findMovie);
       setLoading(false);
@@ -50,10 +46,8 @@ const MovieView = () => {
   };
 
   const handleAddComment = async () => {
-    console.log(comment);
     if (comment.trim()) {
       const newComment = { comment, userId:credentials.id };
-      console.log(newComment);
       const response = await fetch(`http://localhost:8082/filmservice/api/films/film/${movieId}/comment`, {
         method: 'POST',
         credentials: 'include',
@@ -65,12 +59,7 @@ const MovieView = () => {
 
       if (response.ok) {
         const comment = await response.json();
-        console.log(comment);
         dispatch(addComment(movieId, comment));
-      }
-
-      else {
-        console.log('пиздак');
       }
       setComment("");
     }

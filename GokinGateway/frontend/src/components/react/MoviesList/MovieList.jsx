@@ -47,16 +47,12 @@ const MovieList = () => {
     };
 
     const handleAddItem = (fieldName, movieId) => {
-        console.log('handleAddItem')
-        console.log({ fieldName, movieId });
-        console.log('/handleAddItem')
         setCurrentField(fieldName);
         setCurrentMovieId(movieId);
         setOpenModal(true);
     };
 
     const handleRemoveItem = async (fieldName, movieId, itemId) => {
-        console.log(`Remove ${itemId} from ${fieldName} for movie ID: ${movieId}`);
         const response = await fetch(`http://localhost:8082/filmservice/api/films/${movieId}/${fieldName}/${itemId}`, {
             method: 'DELETE',
             credentials: 'include',
@@ -64,12 +60,8 @@ const MovieList = () => {
 
         if (response.ok) {
             const text = await response.text();
-            console.log('pppppppppppppppppp');
-            console.log(text);
-            console.log('pppppppppppppppppp');
             if (!_.isEmpty(text)) {
                 const data = JSON.parse(text);
-                console.log('fieldName: ', fieldName)
                 switch (fieldName) {
                     case 'genres':
                         dispatch(Actions.deleteGenre(movieId, data.id));
@@ -116,7 +108,6 @@ const MovieList = () => {
     const handleModalSubmit = async () => {
         try {
             const errors = validatePopupFields();
-            console.log('1')
             if (!manualInput) {
                 if (errors.person || errors.genre) {
                     setPopupErrors(errors);
@@ -128,10 +119,8 @@ const MovieList = () => {
                     return;
                 }
             }
-            console.log('3')
             let response;
             const endpoint = `http://localhost:8082/filmservice/api/films/${currentMovieId}/${currentField}`;
-            console.log(newItemData);
             if (currentField === 'genres') {
                 response = await fetch(endpoint, {
                     method: 'POST',
@@ -147,7 +136,6 @@ const MovieList = () => {
                 const person = newItemData.person
                     ? newItemData.person
                     : newItemData
-                console.log(person);
                 response = await fetch(endpoint, {
                     method: 'POST',
                     credentials: 'include',
@@ -165,7 +153,6 @@ const MovieList = () => {
 
             if (response.ok) {
                 const text = await response.text();
-                console.log(text);
                 if (!_.isEmpty(text)) {
                     const data = JSON.parse(text);
                     switch (currentField) {

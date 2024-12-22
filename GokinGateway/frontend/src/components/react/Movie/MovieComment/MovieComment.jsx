@@ -21,7 +21,6 @@ const MovieComment = ({ comment, movieId }) => {
         });
         if (response.ok) {
             dispatch(deleteComment(movieId, commentId));
-            console.log("Удаление выполнено! ", { commentId, movieId });
         }
     };
 
@@ -35,7 +34,6 @@ const MovieComment = ({ comment, movieId }) => {
             },
         });
         if (response.ok) {
-            console.log("Изменение выполнено! ", { commentId, movieId, editedMessage });
             const comment = await response.json();
             dispatch(updateComment(movieId, commentId, comment))
             setIsEditing(false);

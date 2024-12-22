@@ -20,7 +20,7 @@ const SignIn = ({})=>{
     return (
         <div className="form-wrapper"> 
             <form className="sign-up-form">
-                <InputField field = "Email"></InputField>
+                <InputField field = "Username"></InputField>
                 <PasswordField field="Password" marginBtm='20px'></PasswordField>
                 <SignInPrompt></SignInPrompt>
                 <SignInSendBtn></SignInSendBtn>

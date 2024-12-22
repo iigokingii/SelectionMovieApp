@@ -16,11 +16,9 @@ const Logout = () => {
 
             if (response.ok) {
                 dispatch(setCredentials({}));
-                console.log('User logged out successfully');
                 navigate('/sign-in'); 
             } else {
                 const error = await response.json();
-                console.log('Error during logout:', error);
             }
         };
 

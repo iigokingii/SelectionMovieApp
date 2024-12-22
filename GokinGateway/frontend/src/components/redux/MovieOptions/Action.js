@@ -43,12 +43,10 @@ export const addUniqueFilm = (film) => ({
     payload: film,
 });
 
-export const deleteUniqueGenre = (movies, genre) => {
-    console.log(movies, genre);
-    return ({
+export const deleteUniqueGenre = (movies, genre) => ({
     type: 'DELETE_UNIQUE_GENRE',
     payload: {movies, genre},
-})};
+});
 
 export const deleteUniqueDirector = (movies, director) => ({
     type: 'DELETE_UNIQUE_DIRECTOR',

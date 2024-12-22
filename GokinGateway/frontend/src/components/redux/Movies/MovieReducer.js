@@ -82,7 +82,6 @@ const movieReducer = (state = initialState, action) => {
 
         case 'DELETE_GENRE':
             var { movieId, itemId } = action.payload;
-            console.log({ movieId, itemId });
             var updatedMoviesGenres = state.movies.map((movie) => {
                 if (movie.id !== movieId) return movie;
                 return {
@@ -90,7 +89,6 @@ const movieReducer = (state = initialState, action) => {
                     genres: movie.genres.filter((genre) => genre.id !== itemId)
                 };
             });
-            console.log(updatedMoviesGenres);
             return {
                 ...state,
                 movies: updatedMoviesGenres
@@ -187,7 +185,6 @@ const movieReducer = (state = initialState, action) => {
             };
         case 'ADD_GENRE':
             var { movieId, item } = action.payload;
-            console.log({ movieId, item });
             var updatedMoviesGenres = state.movies.map((movie) => {
                 if (movie.id !== movieId) return movie;
                 return {
@@ -195,7 +192,6 @@ const movieReducer = (state = initialState, action) => {
                     genres: [...movie.genres, item]
                 };
             });
-            console.log(updatedMoviesGenres);
             return {
                 ...state,
                 movies: updatedMoviesGenres

@@ -11,7 +11,7 @@ const SignInSendBtn = () => {
     const inputValues = useSelector((state) => state.inputReducer.inputValues);
 
 
-    const email = inputValues.email;
+    const username = inputValues.username;
     const password = inputValues.password;
     const dispatch = useDispatch();
     const handleError = (field, errorMsg) => {
@@ -28,52 +28,36 @@ const SignInSendBtn = () => {
 
     const handleSubmit = async () => {
         try {
-            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-            const emailError = email === ''
-                ? 'Поле email пустое.'
-                : !emailRegex.test(email)
-                    ? 'Неверный формат email.'
-                    : '';
-            const passwordError = password === ''
-                ? 'Поле с паролем пустое.'
-                : password.length < 4
-                    ? 'Минимальный размер пароля 4 символа.'
-                    : '';
-
-            handleError('emailError', emailError);
-            handleError('passwordError', passwordError);
-
-            if (emailError || passwordError) {
-                return;
-            }
-
             const response = await fetch('http://localhost:8082/authservice/api/auth/sign-in', {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username: email, password: password }),
+                body: JSON.stringify({ username: username, password: password }),
             });
 
             if (!response.ok) {
                 const error = await response.json();
-                console.log(error);
 
-                if (error.error.includes("emailError")) {
-                    handleError('emailError', error.message);
+                if (error.error.includes("usernameError")) {
+                    handleError('usernameError', error.message);
                 }
 
                 if (error.error.includes("credentials")) {
-                    handleError('emailError', error.message);
+                    handleError('usernameError', error.message);
                     handleError('passwordError', error.message);
                 } else {
                     throw new Error(error.message || 'Unknown error occurred');
                 }
             } else {
-                const credentials = await response.json();
+                const text = await response.text();
+                if (!text) {
+                    return;
+                }
+                
+                const credentials = JSON.parse(text)
                 dispatch(setCredentials(credentials));
-                console.log('Success:', credentials);
                 navigate('/main');
             }
         } catch (error) {

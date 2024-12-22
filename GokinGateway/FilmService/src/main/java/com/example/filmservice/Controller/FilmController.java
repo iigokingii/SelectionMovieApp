@@ -147,5 +147,8 @@ public class FilmController {
 	}
 
 	@DeleteMapping("/favorites/{favoriteId}")
+	public FavoriteFilm RemoveFavorite(@PathVariable Long favoriteId){
+		return filmService.RemoveFavorite(favoriteId);
+	}
 }
 

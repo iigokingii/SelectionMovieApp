@@ -1,5 +1,7 @@
 package com.gokin.authservice.Security.Filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gokin.authservice.DTO.ErrorResponse;
 import com.gokin.authservice.Security.Service.JwtService;
 import com.gokin.authservice.Service.UserService;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -12,11 +14,14 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -91,8 +96,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		}
 	}
 
-
-
 	private void handleRefreshToken(String refreshToken, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String username;
 		try {
@@ -102,26 +105,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			response.setStatus(302);
 			return;
 		}
+		UserDetails userDetails = null;
+		try{
+			userDetails = userService.userDetailsService().loadUserByUsername(username);
+		}
+		catch (UsernameNotFoundException ex){
+			invalidateOldAccessToken(response);
+			invalidateOldRefreshToken(response);
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND); // 404
+			ErrorResponse errorResponse = new ErrorResponse("Username doesn't found", ex.getMessage());
+			// Set the error response in the body
+			response.setContentType("application/json");
+			response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse));
+			return;
+		}
 
-		UserDetails userDetails = userService.userDetailsService().loadUserByUsername(username);
-
-		// Проверяем валидность refresh токена
 		if (jwtService.isTokenValid(refreshToken, userDetails)) {
-			// Генерируем новый access токен
 			String newAccessToken = jwtService.generateTokenAccessToken(userDetails);
 
-			// Удаляем старый access токен
 			invalidateOldAccessToken(response);
 			ResponseCookie accessCookie = ResponseCookie.from("ACCESS_TOKEN", newAccessToken)
+					.httpOnly(true)
 					.path("/")
-					.maxAge(ACCESS_TOKEN_COOKIE_EXPIRATION) // Время жизни 15 минут
+					.maxAge(ACCESS_TOKEN_COOKIE_EXPIRATION)
 					.build();
 			response.addHeader("Set-Cookie", accessCookie.toString());
 
-			// Устанавливаем аутентификацию
 			setAuthentication(username, userDetails, request);
 		} else {
-			// Если refresh токен не валиден, перенаправляем пользователя
 			response.addHeader("Location","/sign-in");
 			response.setStatus(302);
 		}
@@ -133,6 +144,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		oldAccessTokenCookie.setMaxAge(0); // Set its age to 0 to delete it
 		oldAccessTokenCookie.setPath("/"); // Set the path to ensure deletion
 		response.addCookie(oldAccessTokenCookie);
+	}
+
+	private void invalidateOldRefreshToken(HttpServletResponse response) {
+		Cookie oldRefreshTokenCookie = new Cookie(REFRESH_TOKEN, null);
+		oldRefreshTokenCookie.setMaxAge(0); // Set its age to 0 to delete it
+		oldRefreshTokenCookie.setPath("/"); // Set the path to ensure deletion
+		response.addCookie(oldRefreshTokenCookie);
 	}
 	
 	private void setAuthentication(String username, UserDetails userDetails, HttpServletRequest request) {

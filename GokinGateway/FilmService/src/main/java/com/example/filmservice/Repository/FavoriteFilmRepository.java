@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface FavoriteFilmRepository extends JpaRepository<FavoriteFilm,Long> {
     List<FavoriteFilm> findByUserId(Long userId);
+    FavoriteFilm removeFavoriteFilmById(Long id);
 }

@@ -14,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
@@ -523,6 +524,10 @@ public class FilmService {
 
 	public List<FavoriteFilm> GetFavoritesOfUser(Long userId){
 		return favoriteFilmRepository.findByUserId(userId);
+	}
+
+	public FavoriteFilm RemoveFavorite(Long favoriteId){
+		return favoriteFilmRepository.removeFavoriteFilmById(favoriteId);
 	}
 
 	private String extractCookies() {

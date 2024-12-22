@@ -20,57 +20,52 @@ export const updateMovie = (movie) => ({
 
 export const addComment = (movieId, comment) => ({
     type: "ADD_COMMENT",
-    payload: {movieId, comment},
+    payload: { movieId, comment },
 })
 
 export const deleteComment = (movieId, commentId) => ({
     type: "DELETE_COMMENT",
-    payload: {movieId, commentId},
+    payload: { movieId, commentId },
 });
 
 export const updateComment = (movieId, commentId, comment) => ({
     type: "UPDATE_COMMENT",
-    payload: {movieId, commentId, comment},
+    payload: { movieId, commentId, comment },
 });
 
-export const deleteGenre = (movieId, itemId) => {
-    console.log('------');
-    console.log({movieId, itemId});
-    console.log('------');
-    return ({
-        type: "DELETE_GENRE",
-        payload: {movieId, itemId}, 
-    })
-}
+export const deleteGenre = (movieId, itemId) => ({
+    type: "DELETE_GENRE",
+    payload: { movieId, itemId },
+})
 
 export const deleteDirector = (movieId, itemId) => ({
     type: "DELETE_DIRECTOR",
-    payload: {movieId, itemId}, 
+    payload: { movieId, itemId },
 })
 
 export const deleteActor = (movieId, itemId) => ({
     type: "DELETE_ACTOR",
-    payload: {movieId, itemId}, 
+    payload: { movieId, itemId },
 })
 
 export const deleteProducer = (movieId, itemId) => ({
     type: "DELETE_PRODUCER",
-    payload: {movieId, itemId}, 
+    payload: { movieId, itemId },
 })
 
 export const deleteScreenwriter = (movieId, itemId) => ({
     type: "DELETE_SCREENWRITER",
-    payload: {movieId, itemId}, 
+    payload: { movieId, itemId },
 })
 
 export const deleteOperator = (movieId, itemId) => ({
     type: "DELETE_OPERATOR",
-    payload: {movieId, itemId}, 
+    payload: { movieId, itemId },
 })
 
 export const deleteMusician = (movieId, itemId) => ({
     type: "DELETE_MUSICIAN",
-    payload: {movieId, itemId}, 
+    payload: { movieId, itemId },
 })
 
 export const addGenre = (movieId, item) => ({

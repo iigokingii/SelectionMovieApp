@@ -7,13 +7,17 @@ import com.gokin.authservice.DTO.SignUpRequest;
 import com.gokin.authservice.DTO.SignUpResponse;
 import com.gokin.authservice.Model.User;
 import com.gokin.authservice.Security.Service.AuthenticationService;
+import com.gokin.authservice.Security.Service.JwtTokenProvider;
 import com.gokin.authservice.Service.UserService;
+import io.jsonwebtoken.JwtException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +31,8 @@ import java.util.List;
 public class AuthController {
 	private final AuthenticationService authenticationService;
 	private final UserService userService;
+	@Autowired
+	private final JwtTokenProvider jwtTokenProvider;
 	@Operation(summary = "Регистрация пользователя")
 	@PostMapping("/auth/sign-up")
 	public ResponseEntity<SignUpResponse> signUp(@RequestBody @Valid SignUpRequest request, HttpServletResponse response) {
@@ -37,6 +43,36 @@ public class AuthController {
 	@PostMapping("/auth/sign-in")
 	public ResponseEntity<SignUpResponse> signIn(@RequestBody @Valid SignInRequest request, HttpServletResponse response) {
 		return authenticationService.signIn(request, response);
+	}
+
+	@GetMapping("/check-session")
+	public ResponseEntity<?> checkSession(HttpServletRequest request) {
+		Cookie[] cookies = request.getCookies();
+		String accessToken = null;
+		// Проверяем, что cookies не пустое
+		if (cookies != null) {
+			for (Cookie cookie : cookies) {
+				// Ищем cookie с именем ACCESS_TOKEN
+				if ("ACCESS_TOKEN".equals(cookie.getName())) {
+					accessToken = cookie.getValue();  // Возвращаем значение ACCESS_TOKEN
+				}
+			}
+		}
+		if (accessToken == null || accessToken.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session expired or not logged in.");
+		}
+
+		try {
+			// Проверяем токен на валидность
+			String username = jwtTokenProvider.validateTokenAndGetUsername(accessToken);
+
+			// Опционально: проверить, что пользователь существует
+			// userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+			return ResponseEntity.ok("Session is valid.");
+		} catch (JwtException | IllegalArgumentException e) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired token.");
+		}
 	}
 
 	@GetMapping("/auth/credentials")

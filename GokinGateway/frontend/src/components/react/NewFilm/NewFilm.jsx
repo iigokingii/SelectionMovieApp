@@ -145,9 +145,7 @@ const NewFilm = () => {
     if (!validateForm() && !openDialog) return;
 
     if (isAddViaApi) {
-      console.log('Добавить фильм через API:', movieName);
     } else {
-      console.log('Добавить фильм вручную:', manualMovieDetails);
       const response = await fetch('http://localhost:8082/filmservice/api/films/film', {
         method: 'POST',
         credentials: 'include',
@@ -176,9 +174,7 @@ const NewFilm = () => {
           poster: '',
         });
         setErrors({});
-        console.log('Фильм успешно добавлен');
       } else {
-        console.log('Ошибка при добавлении фильма');
       }
     }
   };

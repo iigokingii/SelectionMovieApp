@@ -22,9 +22,18 @@ const SendBtn = () => {
 
     const handleSubmit = async () => {
         try {
-            const emailError = email === '' ? 'Поле Email пустое.' : '';
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            const emailError = email === ''
+                ? 'Поле email пустое.'
+                : !emailRegex.test(email)
+                    ? 'Неверный формат email.'
+                    : '';
+            const passwordError = password === ''
+                ? 'Поле с паролем пустое.'
+                : password.length < 4
+                    ? 'Минимальный размер пароля 4 символа.'
+                    : '';
             const usernameError = username === '' ? 'Заполните имя пользователя.' : '';
-            const passwordError = password === '' ? 'Пароль пустой.' : '';
             const passwordsError = password !== repeatedpassword ? 'Пароли не совпадают.' : '';
 
             handleError('emailError', emailError);
@@ -36,7 +45,6 @@ const SendBtn = () => {
                 return;
             }
 
-            console.log(inputValues);
             handleError('');
             const response = await fetch('http://localhost:8082/authservice/api/auth/sign-up', {
                 method: 'POST',
@@ -49,16 +57,18 @@ const SendBtn = () => {
 
             if (!response.ok) {
                 const error = await response.json();
-                console.log(error);
                 if (error.error.includes("Username"))
                     handleError('usernameError', error.message);
                 if (error.error.includes("Email"))
                     handleError('emailError', error.message);
             } else {
-                const credentials = await response.json();
-                console.log(credentials);
+                const text = await response.text();
+                if (!text) {
+                    return;
+                }
+                
+                const credentials = JSON.parse(text)
                 dispatch(setCredentials(credentials));
-                console.log('Success:', credentials);
                 navigate('/main');
             }
         }

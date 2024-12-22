@@ -22,7 +22,6 @@ const PasswordField = ({ field, marginBtm }) => {
 
     const handleChange = (event) => {
         const newValue = event.target.value;
-        console.log({newfield, newValue})
         dispatch(setInputValue(newfield, newValue));
     };
 

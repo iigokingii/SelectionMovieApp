@@ -30,6 +30,7 @@ function App() {
   const [error, setError] = useState(null);
 
   const fetchMovies = async () => {
+    console.log('asd');
     try {
       const response = await fetch('http://localhost:8082/filmservice/api/films', {
         method: 'GET',
@@ -49,7 +50,7 @@ function App() {
   };
 
   const fetchOptions = async () => {
-    console.log('----');
+    console.log('qwe');
     try {
       const optionsResponse = await fetch('http://localhost:8082/filmservice/api/films/options', {
         method: 'GET',
@@ -59,7 +60,6 @@ function App() {
         throw new Error('Failed to fetch movies');
       }
       const options = await optionsResponse.json();
-      console.log(options);
       dispatch(setMovieOptions(options));
     } catch (err) {
       setError(err.message);
@@ -68,57 +68,64 @@ function App() {
     }
   }
 
+
   const checkAuthCredentials = async () => {
+    console.log('zxc');
+    //try {
+      const response = await fetch('http://localhost:8082/authservice/api/auth/credentials', {
+        method: 'GET',
+        credentials: 'include',
+      });
+      console.log(response);
+      // if (response.status === 403) {
+      //   navigate('/sign-in');
+      //   return;
+      // }
 
-    const response = await fetch('http://localhost:8082/authservice/api/auth/credentials', {
-      method: 'GET',
-      credentials: 'include',
-    });
-    console.log(response.status);
-    if (response.status >= 300 && response.status < 400) {
-      navigate('/sign-in');
-      return;
-    }
+      // if (response.ok) {
+        const text = await response.text();
+        console.log(text);
+        if (!text) {
+          return;
+        }
 
-    if (response.ok) {
-      const text = await response.text();
-      if (!text) {
-        console.log('No credentials returned');
-        return;
-      }
-
-      const credentials = JSON.parse(text);
-      console.log(credentials);
-      dispatch(setCredentials(credentials));
-    } else {
-      console.error(`Failed to fetch credentials: ${response.status} ${response.statusText}`);
-    }
+        const credentials = JSON.parse(text);
+        dispatch(setCredentials(credentials));
+    //   } else {
+    //     console.error(`Failed to fetch credentials: ${response.status} ${response.statusText}`);
+    //   }
+    // } catch (err) {
+    //   console.error('Error during auth check:', err.message);
+    //   navigate('/sign-in');
+    // }
   };
+
 
 
   useEffect(() => {
     const initializeApp = async () => {
-      try{
-        if (_.isEmpty(userCredentials)) {
-          await checkAuthCredentials();
-        }
-        if (!_.isEmpty(userCredentials) && _.isEmpty(movies)) {
-          await fetchMovies();
-          await fetchOptions();
-        }
-        setLoading(false);
-      }
-      catch (err) {
-        console.log(err.message);
-        //setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-      
+      fetch('http://localhost:8082/authservice/api/check-session', {
+        method: 'GET',
+        credentials: 'include',
+      })
+        .then(async response => {
+          console.log(response);
+          if (response.ok) {
+            console.log('000000000000000000000000');
+            await checkAuthCredentials();
+            await fetchMovies();
+            await fetchOptions();
+          } else if (response.status === 401) {
+            console.log('-------------------------');
+            navigate('/sign-in');
+          }
+          setLoading(false);
+        })
+        .catch(error => console.error('Error:', error));
     };
 
     initializeApp();
-  }, [userCredentials]);
+  },[]);
 
   if (loading) {
     return <div>Loading application...</div>;

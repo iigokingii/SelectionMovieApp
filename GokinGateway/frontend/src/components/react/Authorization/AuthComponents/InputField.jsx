@@ -22,19 +22,10 @@ const InputField = ({ field }) => {
             return error;
     }
 
-    const renderIcon=()=>{
-        switch(field){
-            case 'Email':
-                return <EmailIcon sx={{ color: 'action.active', mr: 1, my: 0.5 }} fontSize="small"/>;
-            case 'Username':
-                return <AccountCircle sx={{ color: 'action.active', mr: 1, my: 0.5 }} fontSize="small"/>;
-        }
-    }
-
     return (
         <div>
             <Box sx={{ display: 'flex', alignItems: 'flex-end', width: '265px', marginBottom: handleError() ? '0px' : '20px'}}>
-                {renderIcon()}
+                <AccountCircle sx={{ color: 'action.active', mr: 1, my: 0.5 }} fontSize="small"/>
                 <TextField id="input-with-sx" label={field} value={value} onChange={handleChange} variant="standard" fullWidth/>
             </Box>
             <FormHelperText error sx={{marginLeft:'26px'}}>{handleError()}</FormHelperText>

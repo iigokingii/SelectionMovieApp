@@ -193,7 +193,6 @@ const MovieUpdate = () => {
           poster: '',
         });
         setErrors({});
-        console.log('Фильм успешно добавлен');
         navigate('/movie-list');
       } else {
         console.error('Ошибка при обновлении фильма');

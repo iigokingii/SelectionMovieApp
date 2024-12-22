@@ -19,6 +19,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -120,15 +121,13 @@ public class AuthenticationService {
 	 * @return токен
 	 */
 	public ResponseEntity<SignUpResponse> signIn(SignInRequest request, HttpServletResponse response) {
-		authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-				request.getUsername(),
-				request.getPassword()
-		));
 		try {
-			var user = userRepository.findByUsername(request.getUsername());
-			if(!passwordEncoder.matches(request.getPassword(),user.get().getPassword()))
-				throw new InvalidUserCredentialsException("Username or password is incorrect.");
+			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+					request.getUsername(),
+					request.getPassword()
+			));
 
+			var user = userRepository.findByUsername(request.getUsername());
 			var accessToken = jwtService.generateTokenAccessToken(user.get());
 			var refreshToken = jwtService.generateRefreshToken(user.get());
 
@@ -163,9 +162,9 @@ public class AuthenticationService {
 		catch (UsernameNotFoundException ex){
 			throw new UsernameNotFoundException("User with such email already exists");
 		}
-
-
-
+		catch(AuthenticationException ex){
+			throw new InvalidUserCredentialsException("Username or password is incorrect.");
+		}
 	}
 
 	public SignUpResponse getCredentials(HttpServletRequest request) {
@@ -174,14 +173,14 @@ public class AuthenticationService {
 			return null;
 		}
 
-		var userDetails = (UserDetails) authentication.getPrincipal();
-		var user = userRepository.findByUsername(userDetails.getUsername());
+		User user = (User)authentication.getPrincipal();
+		//var user = userRepository.findByUsername(userPrincipal);
 
 		return SignUpResponse.builder()
-				.id(user.get().getId())
-				.username(user.get().getUsername())
-				.role(user.get().getRole().toString().split("_")[1].toLowerCase())
-				.email(user.get().getEmail())
+				.id(user.getId())
+				.username(user.getUsername())
+				.role(user.getRole().toString().split("_")[1].toLowerCase())
+				.email(user.getEmail())
 				.build();
 	}
 
