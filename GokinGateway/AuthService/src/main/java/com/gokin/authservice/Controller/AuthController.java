@@ -1,10 +1,7 @@
 package com.gokin.authservice.Controller;
 
 
-import com.gokin.authservice.DTO.JwtAuthenticationResponse;
-import com.gokin.authservice.DTO.SignInRequest;
-import com.gokin.authservice.DTO.SignUpRequest;
-import com.gokin.authservice.DTO.SignUpResponse;
+import com.gokin.authservice.DTO.*;
 import com.gokin.authservice.Model.User;
 import com.gokin.authservice.Security.Service.AuthenticationService;
 import com.gokin.authservice.Security.Service.JwtTokenProvider;
@@ -78,6 +75,12 @@ public class AuthController {
 		}
 
 		return ResponseEntity.ok().build();
+	}
+
+	@PostMapping("/auth/credentials")
+	public ResponseEntity<SignUpResponse> updateUser(HttpServletRequest request, HttpServletResponse response, @RequestBody UserDTO user) {
+		SignUpResponse credentials = authenticationService.updateCredentials(request,response, user);
+		return ResponseEntity.ok(credentials);
 	}
 
 	@DeleteMapping("/auth/logout")

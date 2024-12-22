@@ -20,6 +20,7 @@ import Forbidden from './components/react/Forbidden/Forbidden';
 import Logout from './components/react/Logout/Logout';
 import { setMovieOptions } from './components/redux/MovieOptions/Action';
 import Unauthorized from './components/react/Unauthorized/Unauthorized';
+import UserDetails from './components/react/UserDetails/UserDetails';
 
 function App() {
   const location = useLocation();
@@ -146,6 +147,9 @@ function App() {
         } />
         <Route path="/update-movie/:movieId" element={
           <ProtectedRoute roles={['admin']} element={<MovieUpdate />} />
+        } />
+        <Route path="/settings" element={
+          <ProtectedRoute roles={['admin', 'user']} element={<UserDetails />} />
         } />
         <Route path="/logout" element={
           <ProtectedRoute roles={['admin', 'user']} element={<Logout />} />

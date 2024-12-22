@@ -1,10 +1,9 @@
 package com.gokin.authservice.Security.Service;
 
-import com.gokin.authservice.DTO.JwtAuthenticationResponse;
-import com.gokin.authservice.DTO.SignInRequest;
-import com.gokin.authservice.DTO.SignUpRequest;
-import com.gokin.authservice.DTO.SignUpResponse;
+import com.gokin.authservice.DTO.*;
+import com.gokin.authservice.Exceptions.EmailAlreadyExistsException;
 import com.gokin.authservice.Exceptions.InvalidUserCredentialsException;
+import com.gokin.authservice.Exceptions.UsernameAlreadyExistsException;
 import com.gokin.authservice.Model.Role;
 import com.gokin.authservice.Model.User;
 import com.gokin.authservice.Repository.UserRepository;
@@ -186,5 +185,61 @@ public class AuthenticationService {
 				.avatar(user.getAvatar())
 				.build();
 	}
+
+	public SignUpResponse updateCredentials(HttpServletRequest request, HttpServletResponse response, UserDTO userDTO) {
+		var user = userRepository.findById(userDTO.getId())
+				.orElseThrow(() -> new RuntimeException("User not found with id: " + userDTO.getId()));
+
+		if(!passwordEncoder.matches(userDTO.getPassword(), user.getPassword()))
+			throw new InvalidUserCredentialsException("Password is incorrect.");
+
+		if (userRepository.existsByUsername(userDTO.getUsername()) && user.getId().longValue() != userDTO.getId().longValue()) {
+			throw new UsernameAlreadyExistsException("User with such username already exists");
+		}
+
+		if (userRepository.existsByEmail(userDTO.getEmail()) && user.getId().longValue() != userDTO.getId().longValue()) {
+			throw new EmailAlreadyExistsException("User with such email already exists");
+		}
+
+		// Update user details
+		user.setAvatar(userDTO.getAvatar());
+		user.setEmail(userDTO.getEmail());
+		user.setUsername(userDTO.getUsername());
+		user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+		var saved = userRepository.save(user);
+
+		// Generate JWT tokens
+		var accessToken = jwtService.generateTokenAccessToken(saved);
+		var refreshToken = jwtService.generateRefreshToken(saved);
+
+		// Add cookies before returning response body
+		ResponseCookie accessCookie = ResponseCookie.from("ACCESS_TOKEN", accessToken)
+				.httpOnly(true)
+				.path("/")
+				.maxAge(ACCESS_TOKEN_COOKIE_EXPIRATION)
+				.build();
+
+		ResponseCookie refreshCookie = ResponseCookie.from("REFRESH_TOKEN", refreshToken)
+				.httpOnly(true)
+				.path("/")
+				.maxAge(REFRESH_TOKEN_COOKIE_EXPIRATION)
+				.build();
+
+		response.addHeader("Set-Cookie", accessCookie.toString());
+		response.addHeader("Set-Cookie", refreshCookie.toString());
+
+		// Return the response body after cookies are set
+		var resp = SignUpResponse.builder()
+				.id(saved.getId())
+				.username(saved.getUsername())
+				.email(saved.getEmail())
+				.role(saved.getRole().toString().split("_")[1].toLowerCase())
+				.avatar(saved.getAvatar())
+				.build();
+
+		return resp; // ResponseEntity or other methods can be used if needed
+	}
+
+
 
 }

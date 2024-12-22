@@ -59,7 +59,7 @@ const SignInSendBtn = () => {
                 
                 const credentials = JSON.parse(text)
                 dispatch(setCredentials(credentials));
-                navigate('/main');
+                window.location.href = '/main';
             }
         } catch (error) {
             console.error('Error:', error.json());

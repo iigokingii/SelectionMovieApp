@@ -25,7 +25,7 @@ const Header = () => {
     links = [
       { link: "/main", title: "main" },
       { link: "/liked", title: "liked" },
-      { link: "/user-details", title: "user Details" },
+      { link: "/settings", title: "settings" },
       { link: "/ai-chat", title: "chat with Ai" },
       { link: "/logout", title: "logout" },
     ];
