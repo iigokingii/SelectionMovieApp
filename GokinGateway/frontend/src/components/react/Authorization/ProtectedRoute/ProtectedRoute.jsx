@@ -1,12 +1,12 @@
 import { useSelector } from "react-redux";
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ element: Component, roles, ...rest }) => {
     const credentials = useSelector((state) => state.credentialReducer.credentials);
     const [loading, setLoading] = React.useState(true);
     const navigate = useNavigate();
-
+    const location = useLocation();
     useEffect(() => {
         if (credentials) {
             setLoading(false);
@@ -16,7 +16,9 @@ const ProtectedRoute = ({ element: Component, roles, ...rest }) => {
     useEffect(() => {
         if (!loading) {
             const hasRequiredRole = roles ? roles.includes(credentials?.role) : true;
-            if (!hasRequiredRole) {
+            
+            if (!hasRequiredRole && location.pathname !== '/sign-in' && location.pathname !== '/logout' && location.pathname !== '/sign-up') {
+                console.log('sadadasdasdasdas');
                 navigate('/forbidden');
             }
         }

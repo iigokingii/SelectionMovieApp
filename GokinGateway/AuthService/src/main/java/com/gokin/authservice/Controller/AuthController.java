@@ -49,12 +49,10 @@ public class AuthController {
 	public ResponseEntity<?> checkSession(HttpServletRequest request) {
 		Cookie[] cookies = request.getCookies();
 		String accessToken = null;
-		// Проверяем, что cookies не пустое
 		if (cookies != null) {
 			for (Cookie cookie : cookies) {
-				// Ищем cookie с именем ACCESS_TOKEN
 				if ("ACCESS_TOKEN".equals(cookie.getName())) {
-					accessToken = cookie.getValue();  // Возвращаем значение ACCESS_TOKEN
+					accessToken = cookie.getValue();
 				}
 			}
 		}
@@ -63,11 +61,7 @@ public class AuthController {
 		}
 
 		try {
-			// Проверяем токен на валидность
 			String username = jwtTokenProvider.validateTokenAndGetUsername(accessToken);
-
-			// Опционально: проверить, что пользователь существует
-			// userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
 			return ResponseEntity.ok("Session is valid.");
 		} catch (JwtException | IllegalArgumentException e) {

@@ -87,6 +87,7 @@ public class AuthenticationService {
 				.username(savedUser.getUsername())
 				.email(savedUser.getEmail())
 				.role(savedUser.getRole().toString().split("_")[1].toLowerCase())
+				.avatar(savedUser.getAvatar())
 				.build();
 		
 		return ResponseEntity.ok(resp);
@@ -155,6 +156,7 @@ public class AuthenticationService {
 					.username(user.get().getUsername())
 					.email(user.get().getEmail())
 					.role(user.get().getRole().toString().split("_")[1].toLowerCase())
+					.avatar(user.get().getAvatar())
 					.build();
 
 			return ResponseEntity.ok(resp);
@@ -181,6 +183,7 @@ public class AuthenticationService {
 				.username(user.getUsername())
 				.role(user.getRole().toString().split("_")[1].toLowerCase())
 				.email(user.getEmail())
+				.avatar(user.getAvatar())
 				.build();
 	}
 

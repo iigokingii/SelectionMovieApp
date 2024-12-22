@@ -18,9 +18,9 @@ public class FilmController {
 	@Autowired
 	FilmService filmService;
 
-	@GetMapping("/options")
-	public MovieOptionsDTO GetOptions() {
-		return filmService.GetOptions();
+	@GetMapping("/options/{userId}")
+	public MovieOptionsDTO GetOptions(@PathVariable Long userId) {
+		return filmService.GetOptions(userId);
 	}
 
 	@GetMapping("")
@@ -147,8 +147,8 @@ public class FilmController {
 	}
 
 	@DeleteMapping("/favorites/{favoriteId}")
-	public FavoriteFilm RemoveFavorite(@PathVariable Long favoriteId){
-		return filmService.RemoveFavorite(favoriteId);
+	public Long RemoveFavorite(@PathVariable Long favoriteId){
+			return filmService.RemoveFavorite(favoriteId);
 	}
 }
 

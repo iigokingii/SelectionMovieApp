@@ -138,7 +138,10 @@ const NewFilm = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
+  const fileInput = document.getElementById('upload-image');
+  if (fileInput) {
+    fileInput.value = ''; // сбрасываем поле file
+  }
   const handleSubmit = async (e) => {
     e.preventDefault();
 

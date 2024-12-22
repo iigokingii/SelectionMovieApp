@@ -14,4 +14,5 @@ public class SignUpResponse {
 	String role;
 	String username;
 	String email;
+	String avatar;
 }

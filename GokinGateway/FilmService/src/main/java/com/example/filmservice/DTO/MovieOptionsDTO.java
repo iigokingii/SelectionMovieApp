@@ -18,4 +18,5 @@ public class MovieOptionsDTO {
     List<Operator> Operators;
     List<Musician> Musicians;
     List<Producer> Producers;
+    List<FavoriteFilm> FavoriteFilm;
 }

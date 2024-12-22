@@ -8,6 +8,11 @@ export const addUniqueGenre = (genre) => ({
     payload: genre,
 });
 
+export const addUniqueFavorite = (favorite) => ({
+    type: 'ADD_UNIQUE_FAVORITE',
+    payload: favorite,
+});
+
 export const addUniqueDirector = (director) => ({
     type: 'ADD_UNIQUE_DIRECTOR',
     payload: director,
@@ -46,6 +51,11 @@ export const addUniqueFilm = (film) => ({
 export const deleteUniqueGenre = (movies, genre) => ({
     type: 'DELETE_UNIQUE_GENRE',
     payload: {movies, genre},
+});
+
+export const deleteUniqueFavorite = (favoriteId) => ({
+    type: 'DELETE_UNIQUE_FAVORITE',
+    payload: favoriteId,
 });
 
 export const deleteUniqueDirector = (movies, director) => ({

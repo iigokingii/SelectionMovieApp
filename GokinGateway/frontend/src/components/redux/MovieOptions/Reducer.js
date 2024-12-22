@@ -22,6 +22,20 @@ const movieOptionsReducer = (state = initialState, action) => {
             }
             return state;
 
+            case 'ADD_UNIQUE_FAVORITE':
+                console.log('-----------');
+                console.log(state.movieOptions.favoriteFilm);
+                const isAlreadyFavorite = state.movieOptions.favoriteFilm.some(film => film.id === action.payload.id);
+                if (isAlreadyFavorite) {
+                    return state;
+                }
+                return {
+                    ...state,
+                    movieOptions: {
+                        favoriteFilm: [...state.movieOptions.favoriteFilm, action.payload]
+                    },
+                };
+
         case 'ADD_UNIQUE_DIRECTOR':
             if (!state.movieOptions.directors.find(director => director.id === action.payload.id)) {
                 return {
@@ -105,10 +119,7 @@ const movieOptionsReducer = (state = initialState, action) => {
                 };
             }
             return state;
-        
-
-        
-
+    
         case 'DELETE_UNIQUE_GENRE': {
             const { movies, genre } = action.payload;
         
@@ -129,6 +140,15 @@ const movieOptionsReducer = (state = initialState, action) => {
         
             return state;
         }
+
+        case 'DELETE_UNIQUE_FAVORITE':
+            return {
+                ...state,
+                movieOptions: {
+                    ...state.movieOptions,
+                    favoriteFilm: state.movieOptions.favoriteFilm.filter(film => film.id !== action.payload),
+                },
+            };
         
 
         case 'DELETE_UNIQUE_DIRECTOR': {

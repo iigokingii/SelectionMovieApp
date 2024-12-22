@@ -16,9 +16,11 @@ const Logout = () => {
 
             if (response.ok) {
                 dispatch(setCredentials({}));
-                navigate('/sign-in'); 
+                console.log('sad');
+                navigate('/sign-in');
             } else {
                 const error = await response.json();
+                console.error('Logout error:', error);
             }
         };
 

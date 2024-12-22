@@ -7,6 +7,7 @@ import com.gokin.authservice.Model.User;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -38,7 +39,7 @@ public class FilmService {
 	@Autowired HttpServletRequest request;
 	@Autowired FavoriteFilmRepository favoriteFilmRepository;
 
-	public MovieOptionsDTO GetOptions(){
+	public MovieOptionsDTO GetOptions(Long userId){
 		return MovieOptionsDTO.builder()
 				.Actors(actorRepository.findAll())
 				.Directors(directorRepository.findAll())
@@ -47,6 +48,7 @@ public class FilmService {
 				.Operators(operatorRepository.findAll())
 				.ScreenWriters(screenWriterRepository.findAll())
 				.Producers(producerRepository.findAll())
+				.FavoriteFilm(favoriteFilmRepository.findByUserId(userId))
 				.build();
 	}
 
@@ -525,9 +527,10 @@ public class FilmService {
 	public List<FavoriteFilm> GetFavoritesOfUser(Long userId){
 		return favoriteFilmRepository.findByUserId(userId);
 	}
-
-	public FavoriteFilm RemoveFavorite(Long favoriteId){
-		return favoriteFilmRepository.removeFavoriteFilmById(favoriteId);
+	@Transactional
+	public Long RemoveFavorite(Long favoriteId){
+		favoriteFilmRepository.removeFavoriteFilmById(favoriteId);
+		return favoriteId;
 	}
 
 	private String extractCookies() {

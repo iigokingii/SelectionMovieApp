@@ -108,17 +108,19 @@ const MovieList = () => {
     const handleModalSubmit = async () => {
         try {
             const errors = validatePopupFields();
-            if (!manualInput) {
-                if (errors.person || errors.genre) {
+            console.log(errors);
+            if (manualInput) {
+                if (Object.keys(errors).length > 0 && !errors.person) {
                     setPopupErrors(errors);
                     return;
                 }
             } else {
-                if (Object.keys(errors).length > 0 && !errors.person && !errors.genre) {
+                if (Object.keys(errors).length > 0 && !newItemData.person && !newItemData.genre) {
                     setPopupErrors(errors);
                     return;
                 }
             }
+            console.log('q');
             let response;
             const endpoint = `http://localhost:8082/filmservice/api/films/${currentMovieId}/${currentField}`;
             if (currentField === 'genres') {

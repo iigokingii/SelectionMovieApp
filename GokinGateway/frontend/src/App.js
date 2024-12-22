@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { setMovies } from './components/redux/Movies/action';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import _ from 'lodash';
 import Header from './components/react/Header/Header';
 import NewFilm from './components/react/NewFilm/NewFilm';
@@ -52,8 +52,9 @@ function App() {
 
   const fetchOptions = async () => {
     console.log('qwe');
+    console.log(credentials);
     try {
-      const optionsResponse = await fetch('http://localhost:8082/filmservice/api/films/options', {
+      const optionsResponse = await fetch(`http://localhost:8082/filmservice/api/films/options/${credentials.id}`, {
         method: 'GET',
         credentials: 'include',
       });
@@ -69,6 +70,7 @@ function App() {
     }
   }
 
+  var credentials;
 
   const checkAuthCredentials = async () => {
       const response = await fetch('http://localhost:8082/authservice/api/auth/credentials', {
@@ -80,7 +82,8 @@ function App() {
           return;
         }
 
-        const credentials = JSON.parse(text);
+        credentials = JSON.parse(text);
+        console.log(credentials);
         dispatch(setCredentials(credentials));
   };
 
@@ -97,7 +100,7 @@ function App() {
             await checkAuthCredentials();
             await fetchMovies();
             await fetchOptions();
-          } else if (response.status === 401) {
+          } else if (response.status === 401 && location.pathname !== '/sign-in' && location.pathname !== '/sign-up') {
             navigate('/unauthorized');
           }
           setLoading(false);
@@ -125,6 +128,9 @@ function App() {
         } />
         <Route path="/main" element={
           <ProtectedRoute roles={['admin', 'user']} element={<MainPage />} />
+        } />
+        <Route path="/liked" element={
+          <ProtectedRoute roles={['user']} element={<MainPage />} />
         } />
         <Route path="/movie-list" element={
           <ProtectedRoute roles={['admin']} element={<MovieList />} />
