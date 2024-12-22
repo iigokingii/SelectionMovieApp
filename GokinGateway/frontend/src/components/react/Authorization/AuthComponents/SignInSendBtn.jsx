@@ -27,6 +27,7 @@ const SignInSendBtn = () => {
     }, [navigate, dispatch]);
 
     const handleSubmit = async () => {
+        console.log({ username: username, password: password });
         try {
             const response = await fetch('http://localhost:8082/authservice/api/auth/sign-in', {
                 method: 'POST',
@@ -61,7 +62,7 @@ const SignInSendBtn = () => {
                 navigate('/main');
             }
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error:', error.json());
         }
     };
 

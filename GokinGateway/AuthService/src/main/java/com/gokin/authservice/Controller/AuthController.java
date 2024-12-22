@@ -45,7 +45,7 @@ public class AuthController {
 		return authenticationService.signIn(request, response);
 	}
 
-	@GetMapping("/check-session")
+	@GetMapping("/auth/check-session")
 	public ResponseEntity<?> checkSession(HttpServletRequest request) {
 		Cookie[] cookies = request.getCookies();
 		String accessToken = null;

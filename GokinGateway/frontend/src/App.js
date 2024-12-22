@@ -19,6 +19,7 @@ import { setCredentials } from './components/redux/Auth/Action';
 import Forbidden from './components/react/Forbidden/Forbidden';
 import Logout from './components/react/Logout/Logout';
 import { setMovieOptions } from './components/redux/MovieOptions/Action';
+import Unauthorized from './components/react/Unauthorized/Unauthorized';
 
 function App() {
   const location = useLocation();
@@ -70,58 +71,38 @@ function App() {
 
 
   const checkAuthCredentials = async () => {
-    console.log('zxc');
-    //try {
       const response = await fetch('http://localhost:8082/authservice/api/auth/credentials', {
         method: 'GET',
         credentials: 'include',
       });
-      console.log(response);
-      // if (response.status === 403) {
-      //   navigate('/sign-in');
-      //   return;
-      // }
-
-      // if (response.ok) {
         const text = await response.text();
-        console.log(text);
         if (!text) {
           return;
         }
 
         const credentials = JSON.parse(text);
         dispatch(setCredentials(credentials));
-    //   } else {
-    //     console.error(`Failed to fetch credentials: ${response.status} ${response.statusText}`);
-    //   }
-    // } catch (err) {
-    //   console.error('Error during auth check:', err.message);
-    //   navigate('/sign-in');
-    // }
   };
 
 
 
   useEffect(() => {
     const initializeApp = async () => {
-      fetch('http://localhost:8082/authservice/api/check-session', {
+      fetch('http://localhost:8082/authservice/api/auth/check-session', {
         method: 'GET',
         credentials: 'include',
       })
         .then(async response => {
-          console.log(response);
           if (response.ok) {
-            console.log('000000000000000000000000');
             await checkAuthCredentials();
             await fetchMovies();
             await fetchOptions();
           } else if (response.status === 401) {
-            console.log('-------------------------');
-            navigate('/sign-in');
+            navigate('/unauthorized');
           }
           setLoading(false);
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => console.error('Error:', error.json()));
     };
 
     initializeApp();
@@ -138,6 +119,7 @@ function App() {
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/forbidden" element={<Forbidden />} />
+        <Route path="/unauthorized" element={<Unauthorized/>} />
         <Route path="/" element={
           <ProtectedRoute roles={['admin', 'user']} element={<MainPage />} />
         } />
