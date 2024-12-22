@@ -1,18 +1,27 @@
 from flask import Flask, jsonify, request
+from flasgger import Swagger
 import g4f
 import asyncio
 import threading
 import atexit
 from py_eureka_client.eureka_client import EurekaClient
 
+# Параметры приложения
 Port = 8086
 app = Flask(__name__)
+
+# Конфигурация Swagger
+app.config['SWAGGER'] = {
+    'title': 'AI Chat Service',
+    'uiversion': 3
+}
+swagger = Swagger(app)
 
 # Создаем глобальную переменную для клиента Eureka
 eureka_client = EurekaClient(
     eureka_server="http://localhost:8081/eureka/",
     app_name="AiService",
-    instance_port=8086,  # Установили порт на 8087
+    instance_port=8086,
     instance_ip="localhost",
     health_check_url="http://localhost:8086/health",
     instance_id="localhost:AiService:8086"
@@ -25,6 +34,12 @@ async def start_eureka():
 # Проверка здоровья сервиса
 @app.route('/health', methods=['GET'])
 def health():
+    """Проверка здоровья сервиса
+    ---
+    responses:
+      200:
+        description: Сервис работает
+    """
     return "OK", 200
 
 # Основной endpoint микросервиса
@@ -32,6 +47,23 @@ dialog_history = []
 
 @app.route('/api/ai-chat', methods=['POST'])
 def chat():
+    """Обработка чата с AI
+    ---
+    parameters:
+      - name: message
+        in: body
+        type: string
+        required: true
+        description: Сообщение пользователя
+    responses:
+      200:
+        description: Ответ AI
+        schema:
+          type: object
+          properties:
+            response:
+              type: string
+    """
     # Получаем данные из тела запроса
     data = request.get_json()
     user_message = data.get('message', 'Hello')
@@ -55,6 +87,110 @@ def chat():
     # Возвращаем ответ в формате JSON
     return jsonify(response=response_content)
 
+# Новый эндпоинт для получения спецификации OpenAPI
+@app.route('/v3/api-docs', methods=['GET'])
+def api_docs():
+    spec = {
+        "openapi": "3.0.1",
+        "info": {
+            "title": "AI Chat Service",
+            "description": "API для чата с искусственным интеллектом",
+            "version": "0.0.1"
+        },
+        "servers": [
+            {
+                "url": "http://127.0.0.1:8086",
+                "description": "Сервер AI Chat Service"
+            }
+        ],
+        "tags": [
+            {
+                "name": "Чат с AI",
+                "description": "Контроллер, отвечающий за обработку сообщений с AI"
+            }
+        ],
+        "paths": {
+            "/api/ai-chat": {
+                "post": {
+                    "tags": ["Чат с AI"],
+                    "summary": "Обработка чата с AI",
+                    "description": "Получение ответа от AI на сообщение пользователя.",
+                    "operationId": "chatWithAI",
+                    "requestBody": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Сообщение пользователя"
+                                        }
+                                    },
+                                    "required": ["message"]
+                                }
+                            }
+                        },
+                        "required": "true"
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "Ответ AI",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "response": {
+                                                "type": "string",
+                                                "description": "Ответ от искусственного интеллекта"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "/health": {
+                "get": {
+                    "tags": ["Чат с AI"],
+                    "summary": "Проверка здоровья сервиса",
+                    "description": "Проверяет, работает ли сервис.",
+                    "operationId": "checkHealth",
+                    "responses": {
+                        "200": {
+                            "description": "Сервис работает"
+                        }
+                    }
+                }
+            },
+            "/v3/api-docs": {
+                "get": {
+                    "tags": ["Чат с AI"],
+                    "summary": "Возвращает спецификацию OpenAPI",
+                    "description": "Получение спецификации API в формате OpenAPI.",
+                    "operationId": "getApiDocs",
+                    "responses": {
+                        "200": {
+                            "description": "OpenAPI спецификация",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "components": {}
+    }
+    return jsonify(spec)
+
 
 # Запуск клиента Eureka в отдельном потоке
 def run_eureka():
@@ -69,4 +205,6 @@ def stop_eureka():
 # Регистрируем `stop_eureka` для вызова при завершении приложения
 atexit.register(stop_eureka)
 
-app.run(host='0.0.0.0', port=Port)  # Запускаем Flask на порту 8087
+# Запускаем приложение
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=Port)  # Запускаем Flask на порту 8086
