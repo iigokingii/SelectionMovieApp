@@ -34,6 +34,8 @@ const MovieCard = ({ movie, idx }) => {
       ? `http://localhost:8082/filmservice/api/films/favorites/${favoriteId}`
       : 'http://localhost:8082/filmservice/api/films/favorites';
 
+
+    console.log("req url:"+url);
     const method = isFavorite ? 'DELETE' : 'POST';
 
     const response = await fetch(url, {

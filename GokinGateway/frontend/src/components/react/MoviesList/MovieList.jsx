@@ -109,8 +109,9 @@ const MovieList = () => {
         try {
             const errors = validatePopupFields();
             console.log(errors);
+            console.log(manualInput)
             if (manualInput) {
-                if (Object.keys(errors).length > 0 && !errors.person) {
+                if (Object.keys(errors).length > 0 && !errors.person && !errors.genre) {
                     setPopupErrors(errors);
                     return;
                 }

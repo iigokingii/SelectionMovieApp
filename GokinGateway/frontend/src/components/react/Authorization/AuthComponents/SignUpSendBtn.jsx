@@ -49,6 +49,7 @@ const SendBtn = () => {
             const response = await fetch('http://localhost:8082/authservice/api/auth/sign-up', {
                 method: 'POST',
                 credentials: 'include',
+                mode:"cors",
                 headers: {
                     'Content-Type': 'application/json',
                 },

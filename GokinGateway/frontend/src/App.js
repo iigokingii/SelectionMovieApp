@@ -101,9 +101,11 @@ function App() {
             await checkAuthCredentials();
             await fetchMovies();
             await fetchOptions();
+          } else if (response.status === 401 && location.pathname === '/') {
+            navigate('/sign-up');
           } else if (response.status === 401 && location.pathname !== '/sign-in' && location.pathname !== '/sign-up') {
             navigate('/unauthorized');
-          }
+          } 
           setLoading(false);
         })
         .catch(error => console.error('Error:', error.json()));
@@ -120,13 +122,11 @@ function App() {
     <div className="App">
       <Header />
       <Routes>
+        <Route path="/" element={<SignUp />} />
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/forbidden" element={<Forbidden />} />
         <Route path="/unauthorized" element={<Unauthorized/>} />
-        <Route path="/" element={
-          <ProtectedRoute roles={['admin', 'user']} element={<MainPage />} />
-        } />
         <Route path="/main" element={
           <ProtectedRoute roles={['admin', 'user']} element={<MainPage />} />
         } />

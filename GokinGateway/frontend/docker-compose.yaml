@@ -1,0 +1,10 @@
+version: '3'
+services:
+  frontendservice:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: 'FrontendService'
+    ports:
+      - "3000:80"
+    restart: always

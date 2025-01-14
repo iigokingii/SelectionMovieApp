@@ -1,0 +1,207 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: 'postgres:13'
+    container_name: 'course-project-java-postgres'
+    ports:
+      - 5432:5432
+    environment:
+      - 'POSTGRES_USER=goking'
+      - 'POSTGRES_HOST_AUTH_METHOD=trust'
+      - 'POSTGRES_DB=java'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U goking -d java || exit 1"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+    networks:
+      - app-network
+
+  eurekaservice:
+    build:
+      context: ./EurekaService
+    container_name: 'EurekaServer'
+    ports:
+      - "8081:8081"
+    environment:
+      - spring.application.name=EurekaService
+      - server.port=8081
+      - eureka.client.register-with-eureka=false
+      - eureka.client.fetch-registry=false
+      - eureka.client.service-url.defaultZone=http://localhost:8081/eureka
+      - management.endpoint.metrics.enabled=true
+      - management.endpoints.web.exposure.include=*
+      - management.endpoint.prometheus.enabled=true
+      - management.metrics.export.prometheus.enabled=true
+      - management.endpoint.health.show-details=always
+      - management.endpoint.beans.enabled=true
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/actuator/health || exit 1"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    networks:
+      - app-network
+
+  authservice:
+    build:
+      context: ./AuthService
+    container_name: 'AuthService'
+    ports:
+      - "8083:8083"
+    environment:
+      - spring.application.name=AuthService
+      - server.port=8083
+      - eureka.client.service-url.defaultZone=http://eurekaservice:8081/eureka
+      - eureka.instance.prefer-ip-address=true
+      - token.signing.key=MyBestCourseProjectssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+      - token.signing.refresh.expiration=86400000
+      - cookie.signing.refresh.expiration=86400000
+      - token.signing.access.expiration=900000
+      - cookie.signing.access.expiration=900000
+      - security.basic.enabled=false
+      - spring.datasource.driver-class-name=org.postgresql.Driver
+      - spring.datasource.url=jdbc:postgresql://postgres:5432/java
+      - spring.datasource.username=goking
+      - spring.datasource.password=
+      - spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+      - spring.jpa.hibernate.ddl-auto=update
+      - management.endpoint.metrics.enabled=true
+      - management.endpoints.web.exposure.include=*
+      - management.endpoint.prometheus.enabled=true
+      - management.metrics.export.prometheus.enabled=true
+      - management.endpoint.health.show-details=always
+      - management.endpoint.beans.enabled=true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eurekaservice:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8083/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: on-failure
+    networks:
+      - app-network
+
+
+  filmservice:
+    build:
+      context: ./FilmService
+    container_name: 'FilmService'
+    ports:
+      - "8085:8085"
+    environment:
+      - spring.application.name=FilmService
+      - server.port=8085
+      - eureka.client.service-url.defaultZone=http://eurekaservice:8081/eureka
+      - eureka.instance.prefer-ip-address=true
+      - management.security.enabled=false
+      - spring.datasource.driver-class-name=org.postgresql.Driver
+      - spring.datasource.url=jdbc:postgresql://postgres:5432/java
+      - spring.datasource.username=goking
+      - spring.datasource.password=
+      - spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+      - spring.jpa.hibernate.ddl-auto=update
+      - spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration
+      - authservice.base-url =http://gatewayservice:8082/authservice
+      - management.endpoint.metrics.enabled=true
+      - management.endpoints.web.exposure.include=*
+      - management.endpoint.prometheus.enabled=true
+      - management.metrics.export.prometheus.enabled=true
+      - management.endpoint.health.show-details=always
+      - management.endpoint.beans.enabled=true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eurekaservice:
+        condition: service_healthy
+      authservice:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8085/actuator/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: on-failure
+    networks:
+      - app-network
+
+
+  aiservice:
+    build:
+      context: ./AiService
+    container_name: 'AiService'
+    ports:
+      - "8086:8086"
+    environment:
+      - spring.application.name=AiService
+      - server.port=8086
+      - eureka.client.service-url.defaultZone=http://eurekaservice:8081/eureka
+      - eureka.instance.prefer-ip-address=true
+      - eureka.client.register-with-eureka=true
+      - eureka.client.fetch-registry=true
+    depends_on:
+      eurekaservice:
+        condition: service_healthy
+      filmservice:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8086/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: on-failure
+    networks:
+      - app-network
+
+  gatewayservice:
+    build:
+      context: .
+    container_name: 'GatewayService'
+    ports:
+      - "8082:8082"
+    environment:
+      - spring.application.name=GatewayService
+      - server.port=8082
+      - spring.cloud.gateway.globalcors.enabled=true
+      - spring.cloud.gateway.globalcors.cors-configurations.[/**].allowedOrigins=http://localhost:3000
+      - spring.cloud.gateway.globalcors.cors-configurations.[/**].allowedMethods=GET, POST, PUT, DELETE, OPTIONS
+      - spring.cloud.gateway.globalcors.cors-configurations.[/**].allowedHeaders=*
+      - spring.cloud.gateway.globalcors.cors-configurations.[/**].allowCredentials=true
+      - eureka.client.service-url.defaultZone=http://eurekaservice:8081/eureka
+      - eureka.instance.prefer-ip-address=true
+      - eureka.client.register-with-eureka=true
+      - eureka.client.fetch-registry=true
+      - authservice.url=http://authservice:8083/authservice
+      - management.endpoints.web.exposure.include=health,info
+      - management.endpoint.health.show-details=always
+    depends_on:
+      authservice:
+        condition: service_healthy
+      eurekaservice:
+        condition: service_healthy
+      filmservice:
+        condition: service_healthy
+      aiservice:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8082/actuator/health || exit 1"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    restart: on-failure
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

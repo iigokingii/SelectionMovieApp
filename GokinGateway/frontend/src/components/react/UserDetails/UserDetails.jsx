@@ -90,7 +90,7 @@ const UserDetails = () => {
             setNewAvatar(newCredentials.avatar);
             setNewEmail(newCredentials.email);
             setPassword('');
-            setNewUsername(newCredentials.email);
+            setNewUsername(newCredentials.username);
             setIsEditing(false);
             setErrorPassword('');
             setUsernameError('');
@@ -102,7 +102,6 @@ const UserDetails = () => {
             console.error('Error:', error);
         }
     };
-
     return (
         <div className='movie-content-wrapper'>
             <div className="main-page-wrapper" style={{ alignItems: "center", justifyContent: "center" }}>

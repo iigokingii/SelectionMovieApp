@@ -1,0 +1,4 @@
+flask
+flasgger
+g4f
+py_eureka_client

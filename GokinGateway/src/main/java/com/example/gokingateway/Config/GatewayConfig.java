@@ -77,11 +77,11 @@ public class GatewayConfig {
 						.uri("lb://SwaggerService"))
 				.route("FilmService", r -> r.path("/filmservice/**")
 						.filters(f -> f.stripPrefix(1)
-								.filter(authenticationFilter.apply(new AuthenticationFilter.Config())))
+								)
 						.uri("lb://FilmService"))
 				.route("AiService", r -> r.path("/aiservice/**")
 						.filters(f -> f.stripPrefix(1)
-								.filter(authenticationFilter.apply(new AuthenticationFilter.Config())))
+								)
 						.uri("lb://AiService"))
 				.build();
 	}

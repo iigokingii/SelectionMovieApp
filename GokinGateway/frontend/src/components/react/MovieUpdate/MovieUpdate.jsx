@@ -91,7 +91,7 @@ const MovieUpdate = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    const ageValue = parseInt(movieDetails.age);
+    const ageValue = Number(movieDetails.age);
     const foundOtherMovie = movies.find(m => m.id !== movie.id && (m.title.toLowerCase() === movie.title.toLowerCase() || m.originalTitle.toLowerCase() === movie.originalTitle.toLowerCase()))
     if (_.isNaN(ageValue)) {
       newErrors.age = 'Возраст должен быть числом.';
@@ -99,8 +99,8 @@ const MovieUpdate = () => {
       newErrors.age = 'Возраст должен быть в диапазоне от 0 до 18.';
     }
 
-    const imdbRating = parseFloat(movieDetails.imdb_rating.toString().replace(',', '.'));
-    const kinopoiskRating = parseFloat(movieDetails.kinopoisk_rating.toString().replace(',', '.'));
+    const imdbRating = Number(movieDetails.imdb_rating.toString().replace(',', '.'));
+    const kinopoiskRating = Number(movieDetails.kinopoisk_rating.toString().replace(',', '.'));
     if (imdbRating < 0 || imdbRating > 10 || _.isNaN(imdbRating)) {
       newErrors.imdb_rating = 'IMDB рейтинг должен быть от 0 до 10.';
     }
@@ -115,7 +115,7 @@ const MovieUpdate = () => {
       newErrors.year_of_posting = 'Некорректная дата. Пожалуйста, используйте формат YYYY-MM-DD.';
     }
 
-    const boxOfficeValue = parseFloat(movieDetails.total_box_office.toString().replace(',', '.'));
+    const boxOfficeValue = Number(movieDetails.total_box_office.toString().replace(',', '.'));
     if (boxOfficeValue === '' || isNaN(boxOfficeValue)) {
       newErrors.total_box_office = 'Кассовые сборы должны быть числом.';
     }
