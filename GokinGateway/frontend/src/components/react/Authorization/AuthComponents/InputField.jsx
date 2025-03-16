@@ -7,7 +7,7 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import EmailIcon from '@mui/icons-material/Email';
 import FormHelperText from '@mui/material/FormHelperText';
 
-const InputField = ({ field }) => {
+const InputField = ({ field, label }) => {
     const dispatch = useDispatch();
     let newfield = field.toLowerCase().replace(/\s+/g, '');
     let newError = newfield+"Error";
@@ -26,7 +26,7 @@ const InputField = ({ field }) => {
         <div>
             <Box sx={{ display: 'flex', alignItems: 'flex-end', width: '265px', marginBottom: handleError() ? '0px' : '20px'}}>
                 <AccountCircle sx={{ color: 'action.active', mr: 1, my: 0.5 }} fontSize="small"/>
-                <TextField id="input-with-sx" label={field} value={value} onChange={handleChange} variant="standard" fullWidth/>
+                <TextField id="input-with-sx" label={label} value={value} onChange={handleChange} variant="standard" fullWidth/>
             </Box>
             <FormHelperText error sx={{marginLeft:'26px'}}>{handleError()}</FormHelperText>
         </div>

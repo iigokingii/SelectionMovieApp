@@ -9,25 +9,25 @@ const Header = () => {
 
   // Устанавливаем доступные ссылки в зависимости от роли
   let links = [
-    { link: "/sign-up", title: "sign up" },
-    { link: "/sign-in", title: "sign in" },
+    { link: "/sign-up", title: "Регистрация" },
+    { link: "/sign-in", title: "Авторизация" },
   ];
 
   if (credentials?.role === 'admin') {
     links = [
-      { link: "/main", title: "main" },
-      { link: "/movie-list", title: "movie list" },
-      { link: "/add-movie", title: "add new film" },
-      { link: "/ai-chat", title: "chat with Ai" },
-      { link: "/logout", title: "logout" },
+      { link: "/main", title: "Главная" },
+      { link: "/movie-list", title: "Список фильмов" },
+      { link: "/add-movie", title: "Добавить фильм" },
+      { link: "/ai-chat", title: "Чат с ИИ" },
+      { link: "/logout", title: "Выход" },
     ];
   } else if (credentials?.role === 'user') {
     links = [
-      { link: "/main", title: "main" },
-      { link: "/liked", title: "liked" },
-      { link: "/settings", title: "settings" },
-      { link: "/ai-chat", title: "chat with Ai" },
-      { link: "/logout", title: "logout" },
+      { link: "/main", title: "Главная" },
+      { link: "/liked", title: "Избранное" },
+      { link: "/settings", title: "Настройки" },
+      { link: "/ai-chat", title: "Чат с ИИ" },
+      { link: "/logout", title: "Выход" },
     ];
   }
 

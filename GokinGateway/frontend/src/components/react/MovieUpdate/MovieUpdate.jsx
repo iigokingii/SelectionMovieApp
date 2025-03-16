@@ -64,21 +64,57 @@ const MovieUpdate = () => {
     }));
   };
 
-  const handleFileUpload = (event) => {
+  // const handleFileUpload = (event) => {
+  //   const file = event.target.files[0];
+  //   if (file) {
+  //     if (!file.type.startsWith("image/")) {
+  //       return;
+  //     }
+
+  //     const reader = new FileReader();
+  //     reader.onload = () => {
+  //       setMovieDetails((prevDetails) => ({
+  //         ...prevDetails,
+  //         poster: reader.result,
+  //       }));
+  //     };
+  //     reader.readAsDataURL(file);
+  //   }
+  // };
+
+  const handleFileUpload = async (event) => {
     const file = event.target.files[0];
-    if (file) {
-      if (!file.type.startsWith("image/")) {
-        return;
+    console.log('---------------------');
+    console.log(file);
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    console.log(formData);
+    try {
+      const response = await fetch("http://localhost:8082/filmservice/api/s3/upload", {
+        method: "POST",
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error("Ошибка загрузки файла");
       }
 
-      const reader = new FileReader();
-      reader.onload = () => {
-        setMovieDetails((prevDetails) => ({
-          ...prevDetails,
-          poster: reader.result,
-        }));
-      };
-      reader.readAsDataURL(file);
+      const imageUrl = await response.text();
+      console.log("Uploaded file URL:", imageUrl);
+
+      setManualMovieDetails(prevDetails => ({
+        ...prevDetails,
+        poster: imageUrl
+      }));
+    } catch (error) {
+      console.error("Upload error:", error);
     }
   };
 
@@ -92,7 +128,9 @@ const MovieUpdate = () => {
   const validateForm = () => {
     const newErrors = {};
     const ageValue = Number(movieDetails.age);
-    const foundOtherMovie = movies.find(m => m.id !== movie.id && (m.title.toLowerCase() === movie.title.toLowerCase() || m.originalTitle.toLowerCase() === movie.originalTitle.toLowerCase()))
+    const existingTitles = movies.map(m => m.title.toLowerCase());
+    const existingOriginalTitles = movies.map(m => m.originalTitle.toLowerCase());
+    
     if (_.isNaN(ageValue)) {
       newErrors.age = 'Возраст должен быть числом.';
     } else if (ageValue < 0 || ageValue > 18) {
@@ -101,6 +139,8 @@ const MovieUpdate = () => {
 
     const imdbRating = Number(movieDetails.imdb_rating.toString().replace(',', '.'));
     const kinopoiskRating = Number(movieDetails.kinopoisk_rating.toString().replace(',', '.'));
+    console.log({ imdbRating, kinopoiskRating });
+
     if (imdbRating < 0 || imdbRating > 10 || _.isNaN(imdbRating)) {
       newErrors.imdb_rating = 'IMDB рейтинг должен быть от 0 до 10.';
     }
@@ -115,7 +155,10 @@ const MovieUpdate = () => {
       newErrors.year_of_posting = 'Некорректная дата. Пожалуйста, используйте формат YYYY-MM-DD.';
     }
 
+    console.log('asd', movieDetails.total_box_office.toString().replace(',', '.'));
     const boxOfficeValue = Number(movieDetails.total_box_office.toString().replace(',', '.'));
+    console.log(boxOfficeValue);
+    
     if (boxOfficeValue === '' || isNaN(boxOfficeValue)) {
       newErrors.total_box_office = 'Кассовые сборы должны быть числом.';
     }
@@ -140,7 +183,7 @@ const MovieUpdate = () => {
     if (_.isEmpty(newErrors)) {
       if (!movieDetails.title.trim()) {
         newErrors.title = 'Название фильма не может быть пустым.';
-      } else if (!_.isUndefined(foundOtherMovie)) {
+      } else if (existingTitles.includes(movieDetails.title.toLowerCase())) {
         newErrors.title = 'Фильм с таким названием уже существует.';
         setConfirmAction('title');
         setOpenDialog(true);
@@ -148,7 +191,7 @@ const MovieUpdate = () => {
 
       if (!movieDetails.original_title.trim()) {
         newErrors.original_title = 'Оригинальное название не может быть пустым.';
-      } else if (!_.isUndefined(foundOtherMovie)) {
+      } else if (existingOriginalTitles.includes(movieDetails.original_title.toLowerCase())) {
         newErrors.original_title = 'Фильм с таким названием уже существует.';
         setConfirmAction('original_title');
         setOpenDialog(true);
@@ -157,7 +200,8 @@ const MovieUpdate = () => {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+};
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();

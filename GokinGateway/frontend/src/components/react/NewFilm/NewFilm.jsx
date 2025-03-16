@@ -43,21 +43,57 @@ const NewFilm = () => {
     }));
   };
 
-  const handleFileUpload = (event) => {
+  // const handleFileUpload = (event) => {
+  //   const file = event.target.files[0];
+  //   if (file) {
+  //     if (!file.type.startsWith("image/")) {
+  //       return;
+  //     }
+
+  //     const reader = new FileReader();
+  //     reader.onload = () => {
+  //       setManualMovieDetails((prevDetails) => ({
+  //         ...prevDetails,
+  //         poster: reader.result,
+  //       }));
+  //     };
+  //     reader.readAsDataURL(file);
+  //   }
+  // };
+
+  const handleFileUpload = async (event) => {
     const file = event.target.files[0];
-    if (file) {
-      if (!file.type.startsWith("image/")) {
-        return;
+    console.log('---------------------');
+    console.log(file);
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    console.log(formData);
+    try {
+      const response = await fetch("http://localhost:8082/filmservice/api/s3/upload", {
+        method: "POST",
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error("Ошибка загрузки файла");
       }
 
-      const reader = new FileReader();
-      reader.onload = () => {
-        setManualMovieDetails((prevDetails) => ({
-          ...prevDetails,
-          poster: reader.result,
-        }));
-      };
-      reader.readAsDataURL(file);
+      const imageUrl = await response.text();
+      console.log("Uploaded file URL:", imageUrl);
+
+      setManualMovieDetails(prevDetails => ({
+        ...prevDetails,
+        poster: imageUrl
+      }));
+    } catch (error) {
+      console.error("Upload error:", error);
     }
   };
 
@@ -81,6 +117,7 @@ const NewFilm = () => {
 
     const imdbRating = Number(manualMovieDetails.imdb_rating.toString().replace(',', '.'));
     const kinopoiskRating = Number(manualMovieDetails.kinopoisk_rating.toString().replace(',', '.'));
+    console.log({imdbRating, kinopoiskRating});
     if (imdbRating < 0 || imdbRating > 10 || _.isNaN(imdbRating)) {
       newErrors.imdb_rating = 'IMDB рейтинг должен быть от 0 до 10.';
     }

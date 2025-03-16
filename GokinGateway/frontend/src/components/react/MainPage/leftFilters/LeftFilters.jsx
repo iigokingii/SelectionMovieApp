@@ -52,14 +52,14 @@ const LeftFilters = ({ search, setSearch, genre, setGenre, duration, setDuration
   return (
     <Box sx={{ padding: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
       <TextField
-        label="Search by Title"
+        label="Поиск по названию"
         variant="outlined"
         value={search}
         onChange={handleSearchChange}
         fullWidth
       />
       <FormControl fullWidth>
-        <InputLabel>Genre</InputLabel>
+        <InputLabel>Жанр</InputLabel>
         <Select value={genre} onChange={handleGenreChange} label="Genre">
           <MenuItem value="">
             <em>None</em>
@@ -71,12 +71,12 @@ const LeftFilters = ({ search, setSearch, genre, setGenre, duration, setDuration
               </MenuItem>
             ))
           ) : (
-            <MenuItem disabled>No genres available</MenuItem>
+            <MenuItem disabled>Нет доступных жанров</MenuItem>
           )}
         </Select>
       </FormControl>
       <Box>
-        <Typography gutterBottom>Duration (minutes)</Typography>
+        <Typography gutterBottom>Продолжительность (в минутах)</Typography>
         <Slider
           value={duration}
           onChange={handleDurationChange}
@@ -86,7 +86,7 @@ const LeftFilters = ({ search, setSearch, genre, setGenre, duration, setDuration
         />
       </Box>
       <Box>
-        <Typography gutterBottom>Rating</Typography>
+        <Typography gutterBottom>Рейтинг</Typography>
         <Slider
           value={rating}
           onChange={handleRatingChange}

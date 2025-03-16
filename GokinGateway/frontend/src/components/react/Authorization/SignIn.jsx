@@ -19,9 +19,9 @@ const SignIn = ({})=>{
 
     return (
         <div className="form-wrapper"> 
-            <form className="sign-up-form">
-                <InputField field = "Username"></InputField>
-                <PasswordField field="Password" marginBtm='20px'></PasswordField>
+            <form className="sign-up-form2">
+                <InputField field = "Username" label = "Логин"></InputField>
+                <PasswordField field="Password" label = "Пароль" marginBtm='20px'></PasswordField>
                 <SignInPrompt></SignInPrompt>
                 <SignInSendBtn></SignInSendBtn>
             </form>

@@ -20,10 +20,10 @@ const SignUp = ()=>{
     return (
         <div className="form-wrapper">
             <form className="sign-up-form">
-                <InputField field = "Username"></InputField>
-                <InputField field = "Email"></InputField>
-                <PasswordField field="Password" marginBtm='20px'></PasswordField>
-                <PasswordField field="Repeat password" marginBtm='20px'></PasswordField>
+                <InputField field = "Username" label = "Логин"></InputField>
+                <InputField field = "Email" label = "Email"></InputField>
+                <PasswordField field="Password" label="Пароль" marginBtm='20px'></PasswordField>
+                <PasswordField field="Repeat password" label="Повторите пароль" marginBtm='20px'></PasswordField>
                 <SignUpPrompt></SignUpPrompt>
                 <SignUpSendBtn></SignUpSendBtn>
             </form>

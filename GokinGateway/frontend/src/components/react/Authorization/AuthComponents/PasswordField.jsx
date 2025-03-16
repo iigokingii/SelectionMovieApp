@@ -12,7 +12,7 @@ import Box from '@mui/material/Box';
 import Input from '@mui/material/Input';
 import FormHelperText from '@mui/material/FormHelperText';
 
-const PasswordField = ({ field, marginBtm }) => {
+const PasswordField = ({ field, label, marginBtm }) => {
     const dispatch = useDispatch();
     let newfield = field.toLowerCase().replace(/\s+/g, '');
     const value = useSelector((state) => state.inputReducer.inputValues[newfield]);
@@ -41,7 +41,7 @@ const PasswordField = ({ field, marginBtm }) => {
             <Box sx={{ display: 'flex', alignItems: 'flex-end', marginBottom: marginBtm }} variant="standard">
                 <LockIcon sx={{ color: 'action.active', marginRight: '8px', marginBottom: handleError() ? '23px' : '4px' }} fontSize="small" />
                 <FormControl sx={{ width: '233px' }} variant="standard">
-                    <InputLabel htmlFor="standard-adornment-password">{field}</InputLabel>
+                    <InputLabel htmlFor="standard-adornment-password">{label}</InputLabel>
                     <Input
                         id="standard-adornment-password"
                         type={showPassword ? 'text' : 'password'}

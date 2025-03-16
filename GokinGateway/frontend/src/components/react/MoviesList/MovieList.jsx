@@ -291,24 +291,24 @@ const MovieList = () => {
                     <Table stickyHeader>
                         <TableHead>
                             <TableRow>
-                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Index</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Title</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Original Title</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Year</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Country</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Genres</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Directors</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Actors</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Description</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Budget</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Producers</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Screenwriters</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Operators</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Musicians</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Duration</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Rating</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Poster</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Actions</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Индекс</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Название</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Оригинальное название</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Год</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Страна</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Жанры</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Режиссеры</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Актёры</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Описание</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Бюджет</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Продюсеры</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Сценаристы</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Операторы</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Композиторы</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Продолжительность</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Рейтинг</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Постер</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>Действия</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -338,7 +338,7 @@ const MovieList = () => {
                                             startIcon={<AddCircleOutlineIcon />}
                                             sx={{ marginLeft: 1 }}
                                         >
-                                            Add
+                                            Добавить
                                         </Button>
                                     </TableCell>
                                     <TableCell align="center">
@@ -360,7 +360,7 @@ const MovieList = () => {
                                             startIcon={<AddCircleOutlineIcon />}
                                             sx={{ marginLeft: 1 }}
                                         >
-                                            Add
+                                            Добавить
                                         </Button>
                                     </TableCell>
                                     <TableCell align="center">
@@ -382,7 +382,7 @@ const MovieList = () => {
                                             startIcon={<AddCircleOutlineIcon />}
                                             sx={{ marginLeft: 1 }}
                                         >
-                                            Add
+                                            Добавить
                                         </Button>
                                     </TableCell>
                                     <TableCell align="center">
@@ -402,7 +402,7 @@ const MovieList = () => {
                                             size="small"
                                             onClick={() => toggleDescription(movie.id)}
                                         >
-                                            {expandedDescription[movie.id] ? 'Show Less' : 'Show More'}
+                                            {expandedDescription[movie.id] ? 'Показать меньше' : 'Показать больше'}
                                         </Button>
                                     </TableCell>
                                     <TableCell align="center">${movie.totalBoxOffice.toLocaleString()}</TableCell>
@@ -425,7 +425,7 @@ const MovieList = () => {
                                             startIcon={<AddCircleOutlineIcon />}
                                             sx={{ marginLeft: 1 }}
                                         >
-                                            Add
+                                            Добавить
                                         </Button>
                                     </TableCell>
                                     <TableCell align="center">
@@ -447,7 +447,7 @@ const MovieList = () => {
                                             startIcon={<AddCircleOutlineIcon />}
                                             sx={{ marginLeft: 1 }}
                                         >
-                                            Add
+                                            Добавить
                                         </Button>
                                     </TableCell>
                                     <TableCell align="center">
@@ -469,7 +469,7 @@ const MovieList = () => {
                                             startIcon={<AddCircleOutlineIcon />}
                                             sx={{ marginLeft: 1 }}
                                         >
-                                            Add
+                                            Добавить
                                         </Button>
                                     </TableCell>
                                     <TableCell align="center">
@@ -491,7 +491,7 @@ const MovieList = () => {
                                             startIcon={<AddCircleOutlineIcon />}
                                             sx={{ marginLeft: 1 }}
                                         >
-                                            Add
+                                            Добавить
                                         </Button>
                                     </TableCell>
                                     <TableCell align="center">{movie.duration} min</TableCell>
@@ -517,7 +517,7 @@ const MovieList = () => {
                                             sx={{ marginRight: 1 }}
                                             size="small"
                                         >
-                                            Delete
+                                            Удалить
                                         </Button>
                                         <Button
                                             variant="outlined"
@@ -525,7 +525,7 @@ const MovieList = () => {
                                             onClick={() => handleEdit(movie.id)}
                                             size="small"
                                         >
-                                            Edit
+                                            Изменить
                                         </Button>
                                     </TableCell>
                                 </TableRow>
@@ -554,14 +554,26 @@ const MovieList = () => {
                     }}
                 >
                     <Typography variant="h6" component="h2">
-                        Add {currentField === 'genres' ? 'Genre' : currentField.charAt(0).toUpperCase() + currentField.slice(1)} to Movie
+                        Добавить {(() => {
+                                switch (currentField) {
+                                    case 'genres': return 'жанр';
+                                    case 'actors': return 'актера';
+                                    case 'directors': return 'режиссёра';
+                                    case 'producers': return 'продюсера';
+                                    case 'screenwriters': return 'сценариста';
+                                    case 'operators': return 'оператора';
+                                    case 'musicians': return 'композитора';
+                                    default: return 'что-то';
+                                }
+                            })()
+                        } к фильму
                     </Typography>
                     <Grid container spacing={2} sx={{ marginTop: 2 }}>
                         <Grid item xs={12}>
                             <FormControl component="fieldset">
                                 <RadioGroup row value={manualInput ? 'manual' : 'select'} onChange={handleRadioChange}>
-                                    <FormControlLabel value="manual" control={<Radio />} label="Add Manually" />
-                                    <FormControlLabel value="select" control={<Radio />} label="Select from Options" />
+                                    <FormControlLabel value="manual" control={<Radio />} label="Добавить вручную" />
+                                    <FormControlLabel value="select" control={<Radio />} label="Выбрать из готового" />
                                 </RadioGroup>
                             </FormControl>
                         </Grid>
@@ -572,7 +584,7 @@ const MovieList = () => {
                                     <Grid item xs={12}>
                                         <TextField
                                             fullWidth
-                                            label="Genre Name"
+                                            label="Название жанра"
                                             value={newItemData.name || ''}
                                             onChange={(e) => setNewItemData({ ...newItemData, name: e.target.value })}
                                             error={!!popupErrors.name}
@@ -582,7 +594,7 @@ const MovieList = () => {
                                     <Grid item xs={12}>
                                         <TextField
                                             fullWidth
-                                            label="Genre Description"
+                                            label="Описание"
                                             value={newItemData.description || ''}
                                             onChange={(e) => setNewItemData({ ...newItemData, description: e.target.value })}
                                             error={!!popupErrors.description}
@@ -596,7 +608,7 @@ const MovieList = () => {
                                     <Grid item xs={12}>
                                         <TextField
                                             fullWidth
-                                            label="First Name"
+                                            label="Имя"
                                             value={newItemData.firstName || ''}
                                             onChange={(e) => setNewItemData({ ...newItemData, firstName: e.target.value })}
                                             error={!!popupErrors.firstName}
@@ -606,7 +618,7 @@ const MovieList = () => {
                                     <Grid item xs={12}>
                                         <TextField
                                             fullWidth
-                                            label="Last Name"
+                                            label="Фамилия"
                                             value={newItemData.lastName || ''}
                                             onChange={(e) => setNewItemData({ ...newItemData, lastName: e.target.value })}
                                             error={!!popupErrors.lastName}
@@ -616,7 +628,7 @@ const MovieList = () => {
                                     <Grid item xs={12}>
                                         <TextField
                                             fullWidth
-                                            label="Middle Name"
+                                            label="Отчество"
                                             value={newItemData.middleName || ''}
                                             onChange={(e) => setNewItemData({ ...newItemData, middleName: e.target.value })}
                                             error={!!popupErrors.middleName}
@@ -626,7 +638,7 @@ const MovieList = () => {
                                     <Grid item xs={12}>
                                         <TextField
                                             fullWidth
-                                            label="Date of Birth"
+                                            label="День рождения"
                                             value={newItemData.dateOfBirth || ''}
                                             onChange={(e) => setNewItemData({ ...newItemData, dateOfBirth: e.target.value })}
                                             type="date"
@@ -722,10 +734,10 @@ const MovieList = () => {
                     </Grid>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
                         <Button variant="outlined" color="secondary" onClick={handleModalClose}>
-                            Cancel
+                            Отмена
                         </Button>
                         <Button variant="outlined" color="primary" onClick={handleModalSubmit}>
-                            Save
+                            Сохранить
                         </Button>
                     </Box>
                 </Box>

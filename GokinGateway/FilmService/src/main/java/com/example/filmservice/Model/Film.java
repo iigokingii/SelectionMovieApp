@@ -23,7 +23,7 @@ public class Film {
 	private String title;
 	@Column(name = "original_title", nullable = false)
 	private String originalTitle;
-	@Column(name = "poster", nullable = false, length = 50000)
+	@Column(name = "poster", nullable = false, length = 250000)
 	private String poster;
 	@Column(name = "year_of_posting", nullable = false)
 	private Date yearOfPosting;

@@ -3,6 +3,8 @@ package com.example.filmservice.Model;
 import com.gokin.authservice.Model.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.Date;
 
@@ -21,10 +23,12 @@ public class FavoriteFilm {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "film_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Film film;
 
     @Column(name = "added_at", nullable = false)

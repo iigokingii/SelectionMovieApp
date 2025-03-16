@@ -38,6 +38,7 @@ public class FilmService {
 	@Autowired RestTemplate restTemplate;
 	@Autowired HttpServletRequest request;
 	@Autowired FavoriteFilmRepository favoriteFilmRepository;
+	@Autowired S3Service s3Service;
 
 	public MovieOptionsDTO GetOptions(Long userId){
 		return MovieOptionsDTO.builder()
@@ -62,6 +63,7 @@ public class FilmService {
 	}
 
 	public Film AddFilm(FilmDTO film){
+		//s3Service.uploadFile(film.getPoster())
 		var filmGenerated = Film.builder()
 				.Age(film.getAge())
 				.description(film.getDescription())

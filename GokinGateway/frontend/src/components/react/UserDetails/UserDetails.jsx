@@ -5,7 +5,6 @@ import { setCredentials } from '../../redux/Auth/Action';
 
 const UserDetails = () => {
     const dispatch = useDispatch();
-
     const credentials = useSelector((state) => state.credentialReducer.credentials);
 
     // Стейты для изменения информации
@@ -28,7 +27,7 @@ const UserDetails = () => {
         const file = event.target.files[0];
         if (file) {
             if (!file.type.startsWith('image/')) {
-                setAvatarError('Please upload a valid image file');
+                setAvatarError('Пожалуйста, загрузите корректный аватар');
                 return;
             }
             const reader = new FileReader();
@@ -42,13 +41,13 @@ const UserDetails = () => {
 
     const handleSubmit = async () => {
         if (!newUsername || !newEmail || !password) {
-            setErrorMessage('All fields are required');
+            setErrorMessage('Все поля должны быть заполнены');
             return;
         }
 
         const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         if (!emailPattern.test(newEmail)) {
-            setEmailError('Invalid email format');
+            setEmailError('Неверный формат email');
             return;
         } else {
             setEmailError('');
@@ -66,19 +65,28 @@ const UserDetails = () => {
 
             if (!response.ok) {
                 const error = await response.json();
-                if (error.message.includes('username')) {
-                    setUsernameError('Username already exists');
+                console.log(error);
+                if (error.message.toLowerCase().includes('password')) {
+                    setErrorPassword('Неверный пароль');
+                    setEmailError('');
+                    setUsernameError('');
                 }
-                if (error.message.includes('email')) {
-                    setEmailError('Email already exists');
+                else if (error.message.toLowerCase().includes('username')) {
+                    setErrorPassword('');
+                    setEmailError('');
+                    setUsernameError('Такое имя уже занято');
                 }
-                if (error.message.includes('password')) {
-                    setErrorPassword(error.message || 'Incorrect password');
+                else if (error.message.toLowerCase().includes('email')) {
+                    setEmailError('Такой email уже занят');
+                    setUsernameError('');
+                    setErrorPassword('');
                 }
+                setErrorMessage('');
                 return;
             }
 
             const text = await response.text();
+            console.log(text);
             if (!text) {
                 return;
             }
@@ -98,7 +106,7 @@ const UserDetails = () => {
             setAvatarError('');
             setErrorMessage('');
         } catch (error) {
-            setErrorPassword('Error occurred while updating credentials');
+            setErrorPassword('Произошла ошибка при изменении данных');
             console.error('Error:', error);
         }
     };
@@ -139,7 +147,7 @@ const UserDetails = () => {
                                 label="Имя пользователя"
                                 value={newUsername}
                                 onChange={(e) => setNewUsername(e.target.value)}
-                                sx={{ mb: 2, width: '100%' }}
+                                sx={{ mb: 2, width: '250px' }}
                                 error={!!usernameError}
                                 helperText={usernameError}
                             />
@@ -147,7 +155,7 @@ const UserDetails = () => {
                                 label="Email"
                                 value={newEmail}
                                 onChange={(e) => setNewEmail(e.target.value)}
-                                sx={{ mb: 2, width: '100%' }}
+                                sx={{ mb: 2, width:"250px" }}
                                 error={!!emailError}
                                 helperText={emailError}
                             />
@@ -157,7 +165,7 @@ const UserDetails = () => {
                                 variant="outlined"
                                 value={password}
                                 onChange={handlePasswordChange}
-                                sx={{ mb: 2 }}
+                                sx={{ mb: 2, width:"250px" }}
                                 error={!!errorPassword}
                                 helperText={errorPassword}
                             />

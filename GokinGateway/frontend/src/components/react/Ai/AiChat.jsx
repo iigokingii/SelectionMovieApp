@@ -71,6 +71,10 @@ const AiChat = () => {
     };
 
     useEffect(() => {
+        fetch('http://localhost:8082/aiservice/api/ai-chat/new-dialog', { method: 'POST' });
+    }, []);
+
+    useEffect(() => {
         if (messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }

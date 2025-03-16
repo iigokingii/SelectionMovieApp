@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 const SignInPrompt = ()=>{
     return(
         <div className="sign-up-prompt">
-            <p>Don't have account? <Link to="/sign-up">Sign Up</Link></p>
+            <p>Нет аккаунта? <Link to="/sign-up">Регистрация</Link></p>
         </div>
     )
 }

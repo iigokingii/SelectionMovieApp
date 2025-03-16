@@ -101,9 +101,6 @@ const MovieView = () => {
                     )
                   })}
                 </div>
-                <div>
-                  <div>{'Роли дублировали: '}</div>
-                </div>
               </div>
             </div>
           </div>

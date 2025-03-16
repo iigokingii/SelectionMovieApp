@@ -89,8 +89,8 @@ const SendBtn = () => {
 
     return (
         <div className="send-btn-wrapper">
-            <Button sx={{ width: '100px', marginTop: '10px' }} variant="contained" onClick={handleSubmit} endIcon={<SendIcon />} size="small">
-                Send
+            <Button sx={{ width: '130px', marginTop: '10px' }} variant="contained" onClick={handleSubmit} endIcon={<SendIcon />} size="small">
+                Отправить
             </Button>
         </div>
     );

@@ -1,6 +1,6 @@
 .chat-wrapper {
   padding: 0 20px; /* Left and right padding */
-  height: 90.3vh; /* Full height for centering */
+  height: 91.1vh; /* Full height for centering */
   display: flex;
   justify-content: center; /* Center content horizontally */
   align-items: center; /* Center content vertically */
@@ -188,12 +188,12 @@
 
 @keyframes fade-in {
   from {
-    opacity: 0; /* Исходная прозрачность */
-    transform: translateY(20px); /* Сдвиг вниз для эффекта */
+    opacity: 0;
+    transform: translateY(20px); 
   }
   to {
-    opacity: 1; /* Полностью видимый блок */
-    transform: translateY(0); /* Сдвиг в исходное положение */
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

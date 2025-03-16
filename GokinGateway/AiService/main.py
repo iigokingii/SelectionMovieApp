@@ -54,25 +54,13 @@ def health():
 # Основной endpoint микросервиса
 dialog_history = []
 
+@app.route('/api/ai-chat/new-dialog', methods=['POST'])
+def newDialog():
+    dialog_history.clear()
+    return jsonify(response='Открыт новый диалог')
+
 @app.route('/api/ai-chat', methods=['POST'])
 def chat():
-    """Обработка чата с AI
-    ---
-    parameters:
-      - name: message
-        in: body
-        type: string
-        required: true
-        description: Сообщение пользователя
-    responses:
-      200:
-        description: Ответ AI
-        schema:
-          type: object
-          properties:
-            response:
-              type: string
-    """
     # Получаем данные из тела запроса
     data = request.get_json()
     user_message = data.get('message', 'Hello')

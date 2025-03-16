@@ -193,11 +193,19 @@ public class AuthenticationService {
 		if(!passwordEncoder.matches(userDTO.getPassword(), user.getPassword()))
 			throw new InvalidUserCredentialsException("Password is incorrect.");
 
-		if (userRepository.existsByUsername(userDTO.getUsername()) && user.getId().longValue() != userDTO.getId().longValue()) {
+//		if (userRepository.existsByUsername(userDTO.getUsername()) && user.getId().longValue() != userDTO.getId().longValue()) {
+//			throw new UsernameAlreadyExistsException("User with such username already exists");
+//		}
+//
+//		if (userRepository.existsByEmail(userDTO.getEmail()) && user.getId().longValue() != userDTO.getId().longValue()) {
+//			throw new EmailAlreadyExistsException("User with such email already exists");
+//		}
+
+		if (userRepository.existsByUsernameAndIdNot(userDTO.getUsername(), user.getId())) {
 			throw new UsernameAlreadyExistsException("User with such username already exists");
 		}
 
-		if (userRepository.existsByEmail(userDTO.getEmail()) && user.getId().longValue() != userDTO.getId().longValue()) {
+		if (userRepository.existsByEmailAndIdNot(userDTO.getEmail(), user.getId())) {
 			throw new EmailAlreadyExistsException("User with such email already exists");
 		}
 

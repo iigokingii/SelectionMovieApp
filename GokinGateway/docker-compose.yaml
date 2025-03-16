@@ -18,6 +18,19 @@ services:
     networks:
       - app-network
 
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3
+      - DEFAULT_REGION=us-east-1
+      - EDGE_PORT=4566
+      - AWS_ACCESS_KEY_ID=AKIAEXAMPLE123456789
+      - AWS_SECRET_ACCESS_KEY=abcdefghIjklmnopQRSTUvwxYZ0123456789ABCD
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
   eurekaservice:
     build:
       context: ./EurekaService
@@ -59,8 +72,8 @@ services:
       - token.signing.key=MyBestCourseProjectssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
       - token.signing.refresh.expiration=86400000
       - cookie.signing.refresh.expiration=86400000
-      - token.signing.access.expiration=900000
-      - cookie.signing.access.expiration=900000
+      - token.signing.access.expiration=5400000
+      - cookie.signing.access.expiration=5400000
       - security.basic.enabled=false
       - spring.datasource.driver-class-name=org.postgresql.Driver
       - spring.datasource.url=jdbc:postgresql://postgres:5432/java

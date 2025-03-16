@@ -42,6 +42,4 @@ public class Comment {
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonManagedReference
     private User user;
-
-
 }
