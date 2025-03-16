@@ -6,12 +6,12 @@ import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material
 import { TextField, Radio, RadioGroup, FormControl, FormControlLabel, Button, Typography, Box } from '@mui/material';
 import _ from 'lodash';
 import '../../../static/NewFilm/NewFilm.css';
+import MovieFetcher from './MovieFetcher/MovieFetcher';
 
 const NewFilm = () => {
   const dispatch = useDispatch();
   const movies = useSelector((state) => state.movieReducer.movies);
   const [isAddViaApi, setIsAddViaApi] = useState(false);
-  const [movieName, setMovieName] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
   const [manualMovieDetails, setManualMovieDetails] = useState({
@@ -42,24 +42,6 @@ const NewFilm = () => {
       [name]: value,
     }));
   };
-
-  // const handleFileUpload = (event) => {
-  //   const file = event.target.files[0];
-  //   if (file) {
-  //     if (!file.type.startsWith("image/")) {
-  //       return;
-  //     }
-
-  //     const reader = new FileReader();
-  //     reader.onload = () => {
-  //       setManualMovieDetails((prevDetails) => ({
-  //         ...prevDetails,
-  //         poster: reader.result,
-  //       }));
-  //     };
-  //     reader.readAsDataURL(file);
-  //   }
-  // };
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -222,8 +204,8 @@ const NewFilm = () => {
 
   return (
     <React.Fragment>
-      <Box className="new-movie-wrapper">
-        <Box sx={{ maxWidth: '600px', width: '100%' }}>
+      <Box className="new-movie-wrapper" >
+        <Box sx={{ maxWidth: '600px', width: '100%', minHeight:"91vh", backgroundColor:"white", padding: "0px 350px", paddingBottom:"20px" }}>
           <Typography variant="h4" gutterBottom>
             Добавление фильма в каталог
           </Typography>
@@ -250,13 +232,7 @@ const NewFilm = () => {
 
           <form onSubmit={handleSubmit} className="form-section" style={{ marginTop: '20px' }}>
             {isAddViaApi
-              ? <div style={{
-                display: 'flex',
-                height: '100vh',
-                fontSize: '20px',
-                fontWeight: 'bold',
-                color: '#333'
-              }}> Ведется интеграция с API Кинопоиск </div>
+              ? null
               : <Box>
                 <TextField
                   label="Название фильма"
@@ -438,8 +414,12 @@ const NewFilm = () => {
               </Button>
             }
           </form>
+          { isAddViaApi
+            ? <MovieFetcher/>
+            : null}
         </Box>
       </Box>
+      
       {openDialog &&
         <Dialog
           open={openDialog}

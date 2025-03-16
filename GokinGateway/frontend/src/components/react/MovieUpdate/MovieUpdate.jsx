@@ -109,7 +109,7 @@ const MovieUpdate = () => {
       const imageUrl = await response.text();
       console.log("Uploaded file URL:", imageUrl);
 
-      setManualMovieDetails(prevDetails => ({
+      setMovieDetails(prevDetails => ({
         ...prevDetails,
         poster: imageUrl
       }));

@@ -32,7 +32,6 @@ function App() {
   const [error, setError] = useState(null);
 
   const fetchMovies = async () => {
-    console.log('asd');
     try {
       const response = await fetch('http://localhost:8082/filmservice/api/films', {
         method: 'GET',
@@ -52,8 +51,6 @@ function App() {
   };
 
   const fetchOptions = async () => {
-    console.log('qwe');
-    console.log(credentials);
     try {
       const optionsResponse = await fetch(`http://localhost:8082/filmservice/api/films/options/${credentials.id}`, {
         method: 'GET',
@@ -84,7 +81,6 @@ function App() {
         }
 
         credentials = JSON.parse(text);
-        console.log(credentials);
         dispatch(setCredentials(credentials));
   };
 

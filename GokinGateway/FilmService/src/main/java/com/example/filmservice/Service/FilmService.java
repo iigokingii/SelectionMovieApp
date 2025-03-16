@@ -39,7 +39,7 @@ public class FilmService {
 	@Autowired HttpServletRequest request;
 	@Autowired FavoriteFilmRepository favoriteFilmRepository;
 	@Autowired S3Service s3Service;
-
+z
 	public MovieOptionsDTO GetOptions(Long userId){
 		return MovieOptionsDTO.builder()
 				.Actors(actorRepository.findAll())
