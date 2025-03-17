@@ -33,6 +33,15 @@ public class Film {
 	private String description;
 	@Column(name = "kinopoisk_rating", nullable = false)
 	private float kinopoiskRating;
+	@Column(name = "gokin_rating")
+	private float gokinRating;
+	@Column(name = "voice_number")
+	private float voiceNumber;
+	//TODO add budget to all adding screens including api kinopoisk
+	@Column(name = "budget")
+	private float budget;
+	@Column(name = "youtube_url")
+	private String youtubeUrl;
 	@Column(name = "IMDb_rating", nullable = false)
 	private float IMDBRating;
 	@Column(name = "total_box_office", nullable = false)

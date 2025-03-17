@@ -21,6 +21,7 @@ import Logout from './components/react/Logout/Logout';
 import { setMovieOptions } from './components/redux/MovieOptions/Action';
 import Unauthorized from './components/react/Unauthorized/Unauthorized';
 import UserDetails from './components/react/UserDetails/UserDetails';
+import Chat from './components/react/Chat/Chat';
 
 function App() {
   const location = useLocation();
@@ -137,6 +138,9 @@ function App() {
         } />
         <Route path="/ai-chat" element={
           <ProtectedRoute roles={['admin', 'user']} element={<AiChat />} />
+        } />
+        <Route path="/chat" element={
+          <ProtectedRoute roles={['admin', 'user']} element={<Chat/>} />
         } />
         <Route path="/movie/:movieId" element={
           <ProtectedRoute roles={['admin', 'user']} element={<MovieView />} />

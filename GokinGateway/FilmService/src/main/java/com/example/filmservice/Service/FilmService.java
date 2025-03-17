@@ -39,7 +39,7 @@ public class FilmService {
 	@Autowired HttpServletRequest request;
 	@Autowired FavoriteFilmRepository favoriteFilmRepository;
 	@Autowired S3Service s3Service;
-z
+
 	public MovieOptionsDTO GetOptions(Long userId){
 		return MovieOptionsDTO.builder()
 				.Actors(actorRepository.findAll())
@@ -300,6 +300,25 @@ z
 		existingFilm.setPoster(filmDetails.getPoster());
 
 		return filmRepository.save(existingFilm);
+	}
+
+	public float updateGokinRating(Long filmId, int gokinRating) {
+		Optional<Film> optionalFilm = filmRepository.findById(filmId);
+		if (optionalFilm.isPresent()) {
+			Film existingFilm = optionalFilm.get();
+			if (existingFilm.getVoiceNumber() > 0) {
+				float newRating = ((existingFilm.getGokinRating() * existingFilm.getVoiceNumber()) + gokinRating)
+						/ (existingFilm.getVoiceNumber() + 1);
+				existingFilm.setGokinRating(newRating);
+			} else {
+				existingFilm.setGokinRating(gokinRating);
+			}
+			existingFilm.setVoiceNumber(existingFilm.getVoiceNumber() + 1);
+			filmRepository.save(existingFilm);
+			return existingFilm.getVoiceNumber();
+		} else {
+			throw new RuntimeException("Film not found");
+		}
 	}
 
 	public Comment UpdateComment(Long filmId, Long commentId, CommentDTO comment) {

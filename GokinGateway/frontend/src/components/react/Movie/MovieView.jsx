@@ -8,7 +8,7 @@ import '../../../static/Movie/Movie.css';
 import MovieDetail from "./MovieDetail/MovieDetail";
 import MovieStaff from "./MovieStaff/MovieStaff";
 import MovieComment from "./MovieComment/MovieComment";
-import Header from '../Header/Header';
+import StarIcon from '@mui/icons-material/Star';
 
 const MovieView = () => {
   const { movieId } = useParams();
@@ -21,13 +21,39 @@ const MovieView = () => {
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState("");
 
+  const [rating, setRating] = useState(null);
+  const [hovered, setHovered] = useState(null);
+  const [isRating, setIsRating] = useState(false);
+
+  const handleStarClick = async (index) => {
+    setRating(index + 1);
+    setIsRating(false);
+    const response = await fetch(`http://localhost:8082/filmservice/api/films/film/${movieId}/rating`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(index + 1),
+    });
+
+    if (response.ok) {
+      const newRating = await response.json();
+      console.log(newRating);
+    }
+  };
+
+  const handleButtonClick = () => {
+    setIsRating(true);
+  };
+
   useEffect(() => {
     if (isNaN(Number(movieId))) {
       navigate("/main");
     }
 
     const findMovie = movies.find((m) => m.id == movieId);
-    if(findMovie){
+    if (findMovie) {
       setMovie(findMovie);
       setLoading(false);
     }
@@ -47,7 +73,7 @@ const MovieView = () => {
 
   const handleAddComment = async () => {
     if (comment.trim()) {
-      const newComment = { comment, userId:credentials.id };
+      const newComment = { comment, userId: credentials.id };
       const response = await fetch(`http://localhost:8082/filmservice/api/films/film/${movieId}/comment`, {
         method: 'POST',
         credentials: 'include',
@@ -73,8 +99,55 @@ const MovieView = () => {
             <img src={movie.poster} alt="Постер" className="movie-poster" />
           </div>
           <div className="movie-info">
-            <div className="movie-title">{movie.title}</div>
-            <div className="movie-original-title">{movie.originalTitle}</div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <div>
+                <div className="movie-title">{movie.title}</div>
+                <div className="movie-original-title">{movie.originalTitle}</div>
+              </div>
+              <Box sx={{ display: "flex", flexDirection: "column" }}>
+                <Box sx={{ paddingLeft: "20px", display: "flex", alignItems: "center", marginRight: "40px" }}>
+                  <Typography>
+                    Рейтинг Кинопоиск: <span style={{ color: "gold" }}>{movie.kinopoiskRating || 'N/A'}</span>
+                  </Typography>
+                  <Typography sx={{ marginLeft: "10px" }}>
+                    Рейтинг IMDb: <span style={{ color: "gold" }}>{movie.imdbRating || 'N/A'}</span>
+                  </Typography>
+                  {movie.gokinRating
+                    ? <Typography sx={{ marginLeft: "10px" }}>
+                      Рейтинг Gokin: <span style={{ color: "gold" }}>{movie.gokinRating || 'N/A'}</span>
+                    </Typography>
+                    : null}
+                </Box>
+
+                {!isRating ? (
+                  <Box width={{ justifyContent: "center", display: "flex"}}>
+                    <Button
+                      variant="contained"
+                      onClick={handleButtonClick}
+                      sx={{ marginTop: "10px", backgroundColor: "gold" }}
+                    >
+                      Оценить фильм
+                    </Button>
+                  </Box>
+                ) : (
+                  <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: "center", marginTop: "10px" }}>
+                    {[...Array(10)].map((_, index) => (
+                      <StarIcon
+                        key={index}
+                        sx={{
+                          cursor: 'pointer',
+                          color: (rating && index < rating) || (hovered !== null && index <= hovered) ? 'orange' : 'gray',
+                          fontSize: 30
+                        }}
+                        onClick={() => handleStarClick(index)}
+                        onMouseEnter={() => setHovered(index)}
+                        onMouseLeave={() => setHovered(null)}
+                      />
+                    ))}
+                  </Box>
+                )}
+              </Box>
+            </div>
             <div className="movie-about-section">О фильме</div>
             <div className="movie-details-wrapper">
               <div className="movie-details">
@@ -85,7 +158,7 @@ const MovieView = () => {
                 <MovieDetail movieDetailName="Сценарий" movieDetail={movie.screenWriters.map(screenWriter => screenWriter.name + " " + screenWriter.middleName + " " + screenWriter.surname).join(', ')} />
                 <MovieDetail movieDetailName="Оператор" movieDetail={movie.operators.map(operator => operator.name + " " + operator.middleName + " " + operator.surname).join(', ')} />
                 <MovieDetail movieDetailName="Композитор" movieDetail={movie.musicians.map(musician => musician.name + " " + musician.middleName + " " + musician.surname).join(', ')} />
-                <MovieDetail movieDetailName="Бюджет" movieDetail={movie.countryProduced} />
+                <MovieDetail movieDetailName="Бюджет" movieDetail={movie.budget} />
                 <MovieDetail movieDetailName="Сборы в мире" movieDetail={movie.totalBoxOffice} />
                 <MovieDetail movieDetailName="Возраст" movieDetail={`${movie.age}+`} />
                 <MovieDetail movieDetailName="Время" movieDetail={`${movie.duration} мин`} />
@@ -160,7 +233,7 @@ const MovieView = () => {
                   .sort((a, b) => new Date(b.dateOfPosting) - new Date(a.dateOfPosting))
                   .map((comment) => (
                     <MovieComment key={comment.id} comment={comment} movieId={movieId} />
-                ))
+                  ))
                 : null
             }
           </Box>

@@ -19,6 +19,7 @@ const Header = () => {
       { link: "/movie-list", title: "Список фильмов" },
       { link: "/add-movie", title: "Добавить фильм" },
       { link: "/ai-chat", title: "Чат с ИИ" },
+      { link: "/chat", title: "Чат с поддержкой" },
       { link: "/logout", title: "Выход" },
     ];
   } else if (credentials?.role === 'user') {
@@ -27,6 +28,7 @@ const Header = () => {
       { link: "/liked", title: "Избранное" },
       { link: "/settings", title: "Настройки" },
       { link: "/ai-chat", title: "Чат с ИИ" },
+      { link: "/chat", title: "Чат с поддержкой" },
       { link: "/logout", title: "Выход" },
     ];
   }
