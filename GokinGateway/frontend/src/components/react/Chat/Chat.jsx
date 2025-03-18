@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Client } from "@stomp/stompjs";
 import { TextField, Button, Box, Typography, List, ListItem, ListItemText } from "@mui/material";
+import _ from 'lodash';
 
 const Chat = () => {
     const [client, setClient] = useState(null);
@@ -10,12 +11,20 @@ const Chat = () => {
     const [chatRooms, setChatRooms] = useState([]);
     const [currentChatRoom, setCurrentChatRoom] = useState(null);
     const credentials = useSelector((state) => state.credentialReducer.credentials);
-
-    // Получение списка чатов для администратора
     const fetchChatRooms = () => {
         fetch("http://localhost:8082/chatservice/api/chat/admin/chats")
-            .then((response) => response.json())
-            .then((data) => setChatRooms(data));
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`Ошибка: ${response.status} - ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then((data) => {
+                setChatRooms(data);
+            })
+            .catch((error) => {
+                console.error("Произошла ошибка при загрузке данных:", error);
+            });
         console.log(chatRooms);
     };
 
@@ -152,7 +161,7 @@ const Chat = () => {
             >
                 <Typography variant="h6" gutterBottom>Доступные комнаты</Typography>
                 <List>
-                    {chatRooms.map((room) => (
+                    {!_.isEmpty(chatRooms) && chatRooms.map((room) => (
                         <ListItem
                             button
                             key={room.id}

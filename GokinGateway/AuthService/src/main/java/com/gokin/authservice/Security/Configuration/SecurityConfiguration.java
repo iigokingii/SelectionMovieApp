@@ -1,6 +1,7 @@
 package com.gokin.authservice.Security.Configuration;
 
 import com.gokin.authservice.Security.Filter.JwtAuthenticationFilter;
+import com.gokin.authservice.Security.Service.OAuthSuccessHandler;
 import com.gokin.authservice.Service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +29,7 @@ import java.util.List;
 public class SecurityConfiguration {
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 	private final UserService userService;
+	private final OAuthSuccessHandler oAuthSuccessHandler;
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -39,6 +41,10 @@ public class SecurityConfiguration {
 						.requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()
 						.anyRequest().authenticated())
 				.sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.oauth2Login(oauth2 -> oauth2
+						.successHandler(oAuthSuccessHandler)
+						.failureUrl("/api/auth/oauth-failure") // В случае ошибки
+				)
 				.authenticationProvider(authenticationProvider())
 				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 		return http.build();

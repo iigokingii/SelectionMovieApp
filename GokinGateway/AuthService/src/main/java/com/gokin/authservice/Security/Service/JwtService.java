@@ -43,7 +43,7 @@ public class JwtService {
 	 */
 	public String generateTokenAccessToken(UserDetails userDetails) {
 		var claims = getClaims(userDetails);
-		return generateToken(claims, userDetails,ACCESS_TOKEN_EXPIRATION);
+		return generateToken(claims, userDetails, ACCESS_TOKEN_EXPIRATION);
 	}
 
 	public Long extractUserId(String token) {

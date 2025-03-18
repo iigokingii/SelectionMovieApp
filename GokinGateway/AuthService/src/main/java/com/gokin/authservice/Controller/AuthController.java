@@ -4,6 +4,7 @@ import com.gokin.authservice.DTO.*;
 import com.gokin.authservice.Model.User;
 import com.gokin.authservice.Security.Service.AuthenticationService;
 import com.gokin.authservice.Security.Service.JwtTokenProvider;
+import com.gokin.authservice.Service.EmailService;
 import com.gokin.authservice.Service.UserService;
 import io.jsonwebtoken.JwtException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,20 +16,24 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 @Tag(name = "Аутентификация", description = "Контроллер, отвечающий за авторизацию и регистрацию пользователей")
 public class AuthController {
-
+	@Value("${app.frontend.url}")
+	private String frontendUrl;
 	private final AuthenticationService authenticationService;
 	private final UserService userService;
+	@Autowired private final EmailService emailService;
 	@Autowired
 	private final JwtTokenProvider jwtTokenProvider;
 
@@ -38,6 +43,15 @@ public class AuthController {
 			@RequestBody @Valid SignUpRequest request,
 			HttpServletResponse response) {
 		return authenticationService.signUp(request, response);
+	}
+
+	@PostMapping("/forgot-password")
+	public String forgotPassword(@RequestParam String email) {
+		String token = UUID.randomUUID().toString();
+		String resetLink = frontendUrl + "/reset-password?token=" + token;
+
+		emailService.sendPasswordResetEmail(email, resetLink);
+		return "Инструкция по сбросу пароля отправлена на ваш email.";
 	}
 
 	@Operation(summary = "Авторизация пользователя", description = "Авторизует пользователя и выдает токен.")

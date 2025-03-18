@@ -27,7 +27,7 @@ public class User implements UserDetails{
 	@Column(name = "username", nullable = false)
 	private String username;
 
-	@Column(name = "password", nullable = false)
+	@Column(name = "password")
 	@JsonIgnore
 	private String password;
 	

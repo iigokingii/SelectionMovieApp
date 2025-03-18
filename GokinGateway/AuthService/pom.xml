@@ -71,6 +71,24 @@
             <version>0.11.5</version>
         </dependency>
         <!--        -->
+        <!-- OAUTH GOOGLE -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
+        <!-- -->
+        <!-- mail сброс -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+        <!-- -->
         <!--swagger-->
         <dependency>
             <groupId>org.springdoc</groupId>
