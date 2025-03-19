@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { TextField, Button, Box, Typography } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { addComment } from "../../redux/Movies/action";
+import { changeGokinRating } from "../../redux/Movies/action";
 import _ from 'lodash';
 import '../../../static/Movie/Movie.css';
 import MovieDetail from "./MovieDetail/MovieDetail";
@@ -28,7 +29,7 @@ const MovieView = () => {
   const handleStarClick = async (index) => {
     setRating(index + 1);
     setIsRating(false);
-    const response = await fetch(`http://localhost:8082/filmservice/api/films/film/${movieId}/rating`, {
+    const response = await fetch(`http://localhost:8082/filmservice/api/films/film/${movieId}/rating/${credentials.id}`, {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -39,6 +40,7 @@ const MovieView = () => {
 
     if (response.ok) {
       const newRating = await response.json();
+      dispatch(changeGokinRating(parseInt(movieId), newRating));
       console.log(newRating);
     }
   };
@@ -107,18 +109,17 @@ const MovieView = () => {
               <Box sx={{ display: "flex", flexDirection: "column" }}>
                 <Box sx={{ paddingLeft: "20px", display: "flex", alignItems: "center", marginRight: "40px" }}>
                   <Typography>
-                    Рейтинг Кинопоиск: <span style={{ color: "gold" }}>{movie.kinopoiskRating || 'N/A'}</span>
+                    Рейтинг Кинопоиск: <span style={{ color: "gold" }}>{movie.kinopoiskRating ? movie.kinopoiskRating.toFixed(1) : 'N/A'}</span>
                   </Typography>
                   <Typography sx={{ marginLeft: "10px" }}>
-                    Рейтинг IMDb: <span style={{ color: "gold" }}>{movie.imdbRating || 'N/A'}</span>
+                    Рейтинг IMDb: <span style={{ color: "gold" }}>{movie.imdbRating ? movie.imdbRating.toFixed(1) : 'N/A'}</span>
                   </Typography>
-                  {movie.gokinRating
-                    ? <Typography sx={{ marginLeft: "10px" }}>
-                      Рейтинг Gokin: <span style={{ color: "gold" }}>{movie.gokinRating || 'N/A'}</span>
+                  {movie.gokinRating && (
+                    <Typography sx={{ marginLeft: "10px" }}>
+                      Рейтинг Gokin: <span style={{ color: "gold" }}>{movie.gokinRating ? movie.gokinRating.toFixed(1) : 'N/A'}</span>
                     </Typography>
-                    : null}
+                  )}
                 </Box>
-
                 {!isRating ? (
                   <Box width={{ justifyContent: "center", display: "flex"}}>
                     <Button

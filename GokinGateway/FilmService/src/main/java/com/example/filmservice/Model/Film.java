@@ -1,5 +1,6 @@
 package com.example.filmservice.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -105,7 +106,6 @@ public class Film {
 			joinColumns = @JoinColumn(name = "film_id", nullable = false),
 			inverseJoinColumns = @JoinColumn(name = "screen_writer_id", nullable = false)
 	)
-
 	@JsonManagedReference
 	private List<ScreenWriter>screenWriters;
 
@@ -117,4 +117,14 @@ public class Film {
 	)
 	@JsonManagedReference
 	private List<Comment> comments;
+
+	@OneToMany
+	@JoinTable(
+			name = "film_rating",
+			joinColumns = @JoinColumn(name = "film_id", nullable = false),
+			inverseJoinColumns = @JoinColumn(name = "rating_id", nullable = false)
+	)
+	@JsonManagedReference
+	@JsonIgnore
+	private List<Rating> ratings;
 }

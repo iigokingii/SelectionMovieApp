@@ -1,7 +1,10 @@
 package com.gokin.authservice.Controller;
 
 import com.gokin.authservice.DTO.*;
+import com.gokin.authservice.Model.PasswordResetToken;
 import com.gokin.authservice.Model.User;
+import com.gokin.authservice.Repository.PasswordResetTokenRepository;
+import com.gokin.authservice.Repository.UserRepository;
 import com.gokin.authservice.Security.Service.AuthenticationService;
 import com.gokin.authservice.Security.Service.JwtTokenProvider;
 import com.gokin.authservice.Service.EmailService;
@@ -13,15 +16,19 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -33,9 +40,16 @@ public class AuthController {
 	private String frontendUrl;
 	private final AuthenticationService authenticationService;
 	private final UserService userService;
-	@Autowired private final EmailService emailService;
+	@Autowired
+	private final EmailService emailService;
 	@Autowired
 	private final JwtTokenProvider jwtTokenProvider;
+	@Autowired
+	private final PasswordResetTokenRepository tokenRepository;
+	@Autowired
+	private final UserRepository userRepository;
+	@Autowired
+	private final PasswordEncoder passwordEncoder;
 
 	@Operation(summary = "Регистрация пользователя", description = "Регистрирует нового пользователя в системе.")
 	@PostMapping("/auth/sign-up")
@@ -44,15 +58,55 @@ public class AuthController {
 			HttpServletResponse response) {
 		return authenticationService.signUp(request, response);
 	}
+	@Transactional
+	@PostMapping("/auth/forgot-password")
+	public ResponseEntity<?> forgotPassword(@RequestParam String email) {
+		Optional<User> optionalUser = userRepository.findByEmail(email);
+		if (optionalUser.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Пользователь с таким email не найден.");
+		}
 
-	@PostMapping("/forgot-password")
-	public String forgotPassword(@RequestParam String email) {
 		String token = UUID.randomUUID().toString();
+		LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(5);
 		String resetLink = frontendUrl + "/reset-password?token=" + token;
 
+		tokenRepository.deleteByEmail(email);
+		tokenRepository.save(new PasswordResetToken(token, email, expiryTime));
+
 		emailService.sendPasswordResetEmail(email, resetLink);
-		return "Инструкция по сбросу пароля отправлена на ваш email.";
+		return ResponseEntity.ok("Инструкция по сбросу пароля отправлена на ваш email.");
 	}
+
+	@Transactional
+	@PostMapping("/auth/reset-password")
+	public ResponseEntity<?> resetPassword(@RequestBody ResetRequest resetRequest) {
+		Optional<PasswordResetToken> optionalResetToken = tokenRepository.findByToken(resetRequest.getToken());
+
+		if (optionalResetToken.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Неверный или устаревший токен.");
+		}
+
+		PasswordResetToken resetToken = optionalResetToken.get();
+
+		if (resetToken.isExpired()) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Токен устарел. Пожалуйста, запросите новый.");
+		}
+
+		Optional<User> optionalUser = userRepository.findByEmail(resetToken.getEmail());
+
+		if (optionalUser.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Пользователь с таким email не найден.");
+		}
+
+		User user = optionalUser.get();
+		user.setPassword(passwordEncoder.encode(resetRequest.getPassword()));
+		userRepository.save(user);
+
+		tokenRepository.deleteByEmail(user.getEmail());
+
+		return ResponseEntity.ok("Пароль успешно изменен.");
+	}
+
 
 	@Operation(summary = "Авторизация пользователя", description = "Авторизует пользователя и выдает токен.")
 	@PostMapping("/auth/sign-in")

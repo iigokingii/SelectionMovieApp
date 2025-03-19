@@ -8,6 +8,7 @@ import SignInPrompt from "./AuthComponents/SignInPrompt";
 import { restoreInputValue } from "../../redux/Input/action";
 import { Button } from "@mui/material";
 import GoogleIcon from "@mui/icons-material/Google";
+import ResetPasswordPrompt from "./AuthComponents/ResetPasswordPrompt";
 
 const SignIn = () => {
     const dispatch = useDispatch();
@@ -19,7 +20,7 @@ const SignIn = () => {
     }, [dispatch]);
 
     const handleGoogleLogin = () => {
-        window.location.href = "http://localhost:8082/authservice/oauth2/authorization/google";
+        window.location.href = "http://localhost:8083/oauth2/authorization/google";
     };
 
     return (
@@ -28,7 +29,6 @@ const SignIn = () => {
                 <InputField field="Username" label="Логин" />
                 <PasswordField field="Password" label="Пароль" marginBtm="20px" />
                 <SignInPrompt />
-
                 <Button
                     variant="contained"
                     color="primary"
@@ -39,7 +39,7 @@ const SignIn = () => {
                 >
                     Войти через Google
                 </Button>
-
+                <ResetPasswordPrompt/>
                 <SignInSendBtn />
             </form>
         </div>

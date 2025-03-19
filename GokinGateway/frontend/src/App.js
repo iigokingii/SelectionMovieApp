@@ -22,6 +22,8 @@ import { setMovieOptions } from './components/redux/MovieOptions/Action';
 import Unauthorized from './components/react/Unauthorized/Unauthorized';
 import UserDetails from './components/react/UserDetails/UserDetails';
 import Chat from './components/react/Chat/Chat';
+import ResetPasswordForm from './components/react/Authorization/ResetPasswordForm';
+import ForgetPasswordForm from './components/react/Authorization/ForgetPasswordForm';
 
 function App() {
   const location = useLocation();
@@ -100,7 +102,7 @@ function App() {
             await fetchOptions();
           } else if (response.status === 401 && location.pathname === '/') {
             navigate('/sign-up');
-          } else if (response.status === 401 && location.pathname !== '/sign-in' && location.pathname !== '/sign-up') {
+          } else if (response.status === 401 && location.pathname !== '/sign-in' && location.pathname !== '/sign-up' && location.pathname !== '/reset-password' && location.pathname !== '/forget-password') {
             navigate('/unauthorized');
           } 
           setLoading(false);
@@ -122,6 +124,8 @@ function App() {
         <Route path="/" element={<SignUp />} />
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/sign-in" element={<SignIn />} />
+        <Route path="/forget-password" element={<ForgetPasswordForm />} />
+        <Route path="/reset-password" element={<ResetPasswordForm />} />
         <Route path="/forbidden" element={<Forbidden />} />
         <Route path="/unauthorized" element={<Unauthorized/>} />
         <Route path="/main" element={

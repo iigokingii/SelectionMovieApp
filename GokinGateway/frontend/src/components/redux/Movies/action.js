@@ -13,6 +13,11 @@ export const addMovie = (movie) => ({
     payload: movie,
 });
 
+export const changeGokinRating = (movieId, gokinRating) => ({
+    type: 'CHANGE_GOKIN_RATING',
+    payload: { movieId, gokinRating },
+})
+
 export const updateMovie = (movie) => ({
     type: "UPDATE_MOVIE",
     payload: movie,

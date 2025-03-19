@@ -4,16 +4,14 @@ import com.example.filmservice.DTO.*;
 import com.example.filmservice.Model.*;
 import com.example.filmservice.Repository.*;
 import com.gokin.authservice.Model.User;
+import com.gokin.authservice.Repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.client.RestTemplate;
@@ -39,6 +37,8 @@ public class FilmService {
 	@Autowired HttpServletRequest request;
 	@Autowired FavoriteFilmRepository favoriteFilmRepository;
 	@Autowired S3Service s3Service;
+	@Autowired RatingRepository ratingRepository;
+	@Autowired UserRepository userRepository;
 
 	public MovieOptionsDTO GetOptions(Long userId){
 		return MovieOptionsDTO.builder()
@@ -87,7 +87,7 @@ public class FilmService {
 				.build();
 		return filmRepository.save(filmGenerated);
 	}
-
+	// todo restTemplate should be replaced by userRepository
 	public Comment AddComment(Long filmId, CommentDTO commentDTO) {
 		Film film = filmRepository.findById(filmId)
 				.orElseThrow(() -> new EntityNotFoundException("Film not found"));
@@ -301,25 +301,25 @@ public class FilmService {
 
 		return filmRepository.save(existingFilm);
 	}
-
-	public float updateGokinRating(Long filmId, int gokinRating) {
-		Optional<Film> optionalFilm = filmRepository.findById(filmId);
-		if (optionalFilm.isPresent()) {
-			Film existingFilm = optionalFilm.get();
-			if (existingFilm.getVoiceNumber() > 0) {
-				float newRating = ((existingFilm.getGokinRating() * existingFilm.getVoiceNumber()) + gokinRating)
-						/ (existingFilm.getVoiceNumber() + 1);
-				existingFilm.setGokinRating(newRating);
-			} else {
-				existingFilm.setGokinRating(gokinRating);
-			}
-			existingFilm.setVoiceNumber(existingFilm.getVoiceNumber() + 1);
-			filmRepository.save(existingFilm);
-			return existingFilm.getVoiceNumber();
-		} else {
-			throw new RuntimeException("Film not found");
-		}
-	}
+	//todo should be removed
+//	public float updateGokinRating(Long filmId, int gokinRating) {
+//		Optional<Film> optionalFilm = filmRepository.findById(filmId);
+//		if (optionalFilm.isPresent()) {
+//			Film existingFilm = optionalFilm.get();
+//			if (existingFilm.getVoiceNumber() > 0) {
+//				float newRating = ((existingFilm.getGokinRating() * existingFilm.getVoiceNumber()) + gokinRating)
+//						/ (existingFilm.getVoiceNumber() + 1);
+//				existingFilm.setGokinRating(newRating);
+//			} else {
+//				existingFilm.setGokinRating(gokinRating);
+//			}
+//			existingFilm.setVoiceNumber(existingFilm.getVoiceNumber() + 1);
+//			filmRepository.save(existingFilm);
+//			return existingFilm.getGokinRating();
+//		} else {
+//			throw new RuntimeException("Film not found");
+//		}
+//	}
 
 	public Comment UpdateComment(Long filmId, Long commentId, CommentDTO comment) {
 		Optional<Film> filmOptional = filmRepository.findById(filmId);
@@ -553,6 +553,53 @@ public class FilmService {
 		favoriteFilmRepository.removeFavoriteFilmById(favoriteId);
 		return favoriteId;
 	}
+
+	public ResponseEntity<?> AddRating(Long filmId, Long userId, int ratingValue) {
+		Optional<Film> filmOptional = filmRepository.findById(filmId);
+		if (!filmOptional.isPresent()) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Фильм с таким id не найден.");
+		}
+
+		Film film = filmOptional.get();
+		Optional<Rating> existingRating = ratingRepository.findByFilmIdAndUserId(filmId, userId);
+		Rating rating;
+
+		boolean isNewRating;
+		if (existingRating.isPresent()) {
+			rating = existingRating.get();
+			rating.setRating(ratingValue);
+			isNewRating = false;
+		} else {
+			rating = new Rating();
+			rating.setFilm(film);
+			rating.setUser(userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + userId)));
+			rating.setRating(ratingValue);
+			isNewRating = true;
+		}
+
+		ratingRepository.save(rating);
+		return ResponseEntity.ok(updateFilmRating(film, ratingValue, isNewRating));
+	}
+
+
+	private float updateFilmRating(Film film, int gokinRating, boolean isNewRating) {
+		var ratings = ratingRepository.findRatingsByFilmId(film.getId());
+		var totalVoiceNumber = ratings.size();
+		int totalRating = ratings.stream()
+				.mapToInt(Rating::getRating)
+				.sum();
+		float changedRating = (float)totalRating/(float)totalVoiceNumber;
+		film.setGokinRating(changedRating);
+		if (isNewRating) {
+			film.setVoiceNumber(film.getVoiceNumber() + 1);
+		}
+
+		filmRepository.save(film);
+		return film.getGokinRating();
+	}
+
+
+
 
 	private String extractCookies() {
 		Cookie[] cookies = request.getCookies();

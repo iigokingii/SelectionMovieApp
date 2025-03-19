@@ -15,6 +15,7 @@ const movieReducer = (state = initialState, action) => {
                 ...state,
                 movies: updatedMovies
             };
+
         case 'ADD_MOVIE':
             var updatedMovies = [...state.movies, action.payload];
             return {
@@ -26,6 +27,18 @@ const movieReducer = (state = initialState, action) => {
             var updateMovies = state.movies.map(movie => {
                 if (movie.id === action.payload.id)
                     return action.payload
+                return movie;
+            })
+            return {
+                ...state,
+                movies: updateMovies,
+            }
+
+        case 'CHANGE_GOKIN_RATING':
+            var { movieId, gokinRating } = action.payload;
+            var updateMovies = state.movies.map(movie => {
+                if (movie.id === action.payload.movieId)
+                    return { ...movie, gokinRating }
                 return movie;
             })
             return {

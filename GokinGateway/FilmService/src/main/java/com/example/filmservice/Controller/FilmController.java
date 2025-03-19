@@ -53,11 +53,13 @@ public class FilmController {
 	}
 	//todo оценить можно 1 раз для пользователя
 	@Operation(summary = "Обновить gokin рейтинг фильма")
-	@PostMapping("/film/{filmId}/rating")
-	public float updateGokinRating(
-			@Parameter(description = "ID фильма") @PathVariable Long filmId,
+	@PostMapping("/film/{filmId}/rating/{userId}")
+	public ResponseEntity<?> updateGokinRating(
+			@Parameter(description = "ID фильма")
+			@PathVariable Long filmId,
+			@PathVariable Long userId,
 			@RequestBody @Valid int gokinRating) {
-		return filmService.updateGokinRating(filmId, gokinRating);
+		return filmService.AddRating(filmId, userId, gokinRating);
 	}
 
 	@Operation(summary = "Удалить фильм по ID")
