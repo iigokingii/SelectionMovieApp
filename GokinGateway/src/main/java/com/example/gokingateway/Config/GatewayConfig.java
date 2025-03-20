@@ -46,11 +46,9 @@ import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import com.example.gokingateway.AuthenticationFilter.AuthenticationFilter;
+import com.example.gokingateway.Filters.AuthenticationFilter;
 import org.springframework.http.HttpStatus;
 import reactor.core.publisher.Mono;
-
-import java.net.URI;
 
 @Configuration
 public class GatewayConfig {
@@ -83,13 +81,17 @@ public class GatewayConfig {
 						.filters(f -> f.stripPrefix(1)
 						)
 						.uri("lb://ChatService"))
+				.route("StripeService", r -> r.path("/stripeservice/**")
+						.filters(f -> f.stripPrefix(1)
+						)
+						.uri("lb://StripeService"))
 				.route("QuizService", r -> r.path("/quizservice/**")
 						.filters(f -> f.stripPrefix(1)
 						)
 						.uri("lb://QuizService"))
 				.route("AiService", r -> r.path("/aiservice/**")
 						.filters(f -> f.stripPrefix(1)
-								)
+						)
 						.uri("lb://AiService"))
 				.build();
 	}

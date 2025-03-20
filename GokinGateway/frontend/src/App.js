@@ -19,11 +19,13 @@ import { setCredentials } from './components/redux/Auth/Action';
 import Forbidden from './components/react/Forbidden/Forbidden';
 import Logout from './components/react/Logout/Logout';
 import { setMovieOptions } from './components/redux/MovieOptions/Action';
+import { setSubscription } from './components/redux/Subscription/action';
 import Unauthorized from './components/react/Unauthorized/Unauthorized';
 import UserDetails from './components/react/UserDetails/UserDetails';
 import Chat from './components/react/Chat/Chat';
 import ResetPasswordForm from './components/react/Authorization/ResetPasswordForm';
 import ForgetPasswordForm from './components/react/Authorization/ForgetPasswordForm';
+import SubscriptionForm from './components/react/Subscription/SubscriptionForm';
 
 function App() {
   const location = useLocation();
@@ -87,6 +89,17 @@ function App() {
         dispatch(setCredentials(credentials));
   };
 
+  const fetchSubscription = async () => {
+    const response = await fetch(`http://localhost:8082/stripeservice/api/subscription/check?email=${credentials.email}`);
+    const data = await response.json();
+
+    if (data.subscriptionId) {
+      dispatch(setSubscription(data));
+    } else {
+      dispatch(setSubscription(null));
+    }
+  }
+
 
 
   useEffect(() => {
@@ -100,6 +113,7 @@ function App() {
             await checkAuthCredentials();
             await fetchMovies();
             await fetchOptions();
+            await fetchSubscription();
           } else if (response.status === 401 && location.pathname === '/') {
             navigate('/sign-up');
           } else if (response.status === 401 && location.pathname !== '/sign-in' && location.pathname !== '/sign-up' && location.pathname !== '/reset-password' && location.pathname !== '/forget-password') {
@@ -130,6 +144,9 @@ function App() {
         <Route path="/unauthorized" element={<Unauthorized/>} />
         <Route path="/main" element={
           <ProtectedRoute roles={['admin', 'user']} element={<MainPage />} />
+        } />
+        <Route path="/subscription-form" element={
+          <ProtectedRoute roles={['user']} element={<SubscriptionForm />} />
         } />
         <Route path="/liked" element={
           <ProtectedRoute roles={['user']} element={<MainPage />} />

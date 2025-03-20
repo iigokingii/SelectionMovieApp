@@ -18,22 +18,22 @@ app.config['SWAGGER'] = {
 swagger = Swagger(app)
 
 # Создаем глобальную переменную для клиента Eureka
-# eureka_client = EurekaClient(
-#     eureka_server="http://localhost:8081/eureka/",
-#     app_name="AiService",
-#     instance_port=8086,
-#     instance_ip="localhost",
-#     health_check_url="http://localhost:8086/health",
-#     instance_id="localhost:AiService:8086"
-# )
 eureka_client = EurekaClient(
-    eureka_server="http://eurekaservice:8081/eureka/",
+    eureka_server="http://localhost:8081/eureka/",
     app_name="AiService",
     instance_port=8086,
-    instance_ip="aiservice",
-    health_check_url="http://aiservice:8086/health",
-    instance_id="aiservice:AiService:8086"
+    instance_ip="localhost",
+    health_check_url="http://localhost:8086/health",
+    instance_id="localhost:AiService:8086"
 )
+# eureka_client = EurekaClient(
+#     eureka_server="http://eurekaservice:8081/eureka/",
+#     app_name="AiService",
+#     instance_port=8086,
+#     instance_ip="aiservice",
+#     health_check_url="http://aiservice:8086/health",
+#     instance_id="aiservice:AiService:8086"
+# )
 
 
 # Асинхронная функция для запуска регистрации в Eureka

@@ -3,6 +3,7 @@ import inputReducer from './Input/InputReducer';
 import movieReducer from './Movies/MovieReducer';
 import credentialReducer from './Auth/Reducer';
 import movieOptionsReducer from './MovieOptions/Reducer';
+import subscriptionReducer from './Subscription/reducer';
 
 const store = configureStore({
     reducer: {
@@ -10,6 +11,7 @@ const store = configureStore({
         movieOptionsReducer,
         inputReducer,
         credentialReducer,
+        subscriptionReducer,
     },
 });
 
