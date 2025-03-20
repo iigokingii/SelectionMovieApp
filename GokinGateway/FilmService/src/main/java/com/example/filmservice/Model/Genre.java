@@ -18,9 +18,9 @@ public class Genre {
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "genre_id_seq")
 	@SequenceGenerator(name = "genre_id_seq", sequenceName = "genre_id_seq", allocationSize = 1)
 	private Long id;
-	@Column(name = "name", nullable = false)
+	@Column(name = "name")
 	private String name;
-	@Column(name = "description", nullable = false)
+	@Column(name = "description")
 	private String description;
 	@ManyToMany(mappedBy = "genres")
 	@JsonBackReference

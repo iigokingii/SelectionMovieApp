@@ -51,7 +51,6 @@ public class FilmController {
 			@RequestBody @Valid FilmDTO filmDetails) {
 		return filmService.updateFilm(filmId, filmDetails);
 	}
-	//todo оценить можно 1 раз для пользователя
 	@Operation(summary = "Обновить gokin рейтинг фильма")
 	@PostMapping("/film/{filmId}/rating/{userId}")
 	public ResponseEntity<?> updateGokinRating(

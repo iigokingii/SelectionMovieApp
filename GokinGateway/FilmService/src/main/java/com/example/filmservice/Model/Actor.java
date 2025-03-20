@@ -20,13 +20,13 @@ public class Actor {
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "actor_id_seq")
 	@SequenceGenerator(name = "actor_id_seq", sequenceName = "actor_id_seq", allocationSize = 1)
 	private Long id;
-	@Column(name = "name", nullable = false)
+	@Column(name = "name")
 	private String name;
-	@Column(name = "surname", nullable = false)
+	@Column(name = "surname")
 	private String surname;
-	@Column(name = "middle_name", nullable = false)
+	@Column(name = "middle_name")
 	private String middleName;
-	@Column(name = "birthday", nullable = false)
+	@Column(name = "birthday")
 	private LocalDate birthday;
 	@ManyToMany(mappedBy = "actors")
 	@JsonBackReference

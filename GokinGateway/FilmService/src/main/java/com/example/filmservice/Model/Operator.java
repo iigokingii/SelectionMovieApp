@@ -21,13 +21,13 @@ public class Operator {
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "operator_id_seq")
 	@SequenceGenerator(name = "operator_id_seq", sequenceName = "operator_id_seq", allocationSize = 1)
 	private Long id;
-	@Column(name = "name", nullable = false)
+	@Column(name = "name")
 	private String name;
-	@Column(name = "surname", nullable = false)
+	@Column(name = "surname")
 	private String surname;
-	@Column(name = "middle_name", nullable = false)
+	@Column(name = "middle_name")
 	private String middleName;
-	@Column(name = "birthday", nullable = false)
+	@Column(name = "birthday")
 	private LocalDate birthday;
 	@ManyToMany(mappedBy = "operators")
 	@JsonBackReference
