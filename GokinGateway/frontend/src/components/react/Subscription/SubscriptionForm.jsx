@@ -4,7 +4,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import { useSelector, useDispatch } from "react-redux";
 import { Button, Card, CardContent, Typography, CircularProgress, Alert } from "@mui/material";
 import { setSubscription } from "../../redux/Subscription/action";
-
+import _ from 'lodash';
 const stripePromise = loadStripe("pk_test_51R4mpiJQe6DXzZU5W7VbrpXgv1sIEGbSuHCT0nBIoDFQVSUQSqMs9cyvt3ZdB4eqAiqLogTuODP5r71WyFSJx3rT00sEZ4jS3K");
 
 const SubscriptionForm = () => {
@@ -20,12 +20,32 @@ const SubscriptionForm = () => {
     const subscriptionData = useSelector((state) => state.subscriptionReducer.subscription);
     const email = credentials.email;
 
-    const checkSubscription = () => {
+    const checkSubscription = async () => {
         setLoading(true);
         setMessage(null);
-        setSubscription(subscriptionData?.subscriptionId ? subscriptionData : null);
-        console.log(subscriptionData);
-        setLoading(false);
+        if (!_.isEmpty(subscriptionData)) {
+            setSubscription(subscriptionData?.subscriptionId ? subscriptionData : null);
+            console.log(subscriptionData);
+            setLoading(false);
+        }
+        else {
+            try {
+                const response = await fetch(`http://localhost:8082/stripeservice/api/subscription/check?email=${email}`);
+                const data = await response.json();
+                
+                if (data.subscriptionId) {
+                    console.log(data);
+                    setSubscription(data);
+                } else {
+                    setSubscription(null);
+                }
+            } catch (error) {
+                console.error("Ошибка при проверке подписки:", error);
+                setMessage({ type: "error", text: "Ошибка при проверке подписки" });
+            } finally {
+                setLoading(false);
+            }
+        }
     };
 
     const cancelSubscription = async () => {

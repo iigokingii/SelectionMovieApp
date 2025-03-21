@@ -6,6 +6,7 @@ import threading
 import atexit
 from py_eureka_client.eureka_client import EurekaClient
 
+
 # Параметры приложения
 Port = 8086
 app = Flask(__name__)

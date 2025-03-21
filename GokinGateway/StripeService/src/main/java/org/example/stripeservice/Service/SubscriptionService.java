@@ -1,5 +1,7 @@
 package org.example.stripeservice.Service;
 
+import com.gokin.authservice.Model.User;
+import com.gokin.authservice.Repository.UserRepository;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
 import com.stripe.model.Subscription;
@@ -15,17 +17,21 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import org.example.stripeservice.Model.UserSubscription;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
 public class SubscriptionService {
 
     @Autowired UserSubscriptionRepository userSubscriptionRepository;
+    @Autowired private UserRepository userRepository;
+
+    private static final int MAX_FREE_REQUESTS = 5;
+    private static final int RESET_INTERVAL_HOURS = 24;
 
     public Map<String, Object> CreateSubscription(Map<String, String> request) {
         Map<String, Object> response = new HashMap<>();
         try {
-            // Создаем клиента в Stripe
             CustomerCreateParams customerParams = CustomerCreateParams.builder()
                     .setEmail(request.get("email"))
                     .setPaymentMethod(request.get("paymentMethodId"))
@@ -36,7 +42,6 @@ public class SubscriptionService {
                     ).build();
             Customer customer = Customer.create(customerParams);
 
-            // Создаем подписку в Stripe
             SubscriptionCreateParams subParams = SubscriptionCreateParams.builder()
                     .setCustomer(customer.getId())
                     .addItem(SubscriptionCreateParams.Item.builder()
@@ -47,7 +52,6 @@ public class SubscriptionService {
 
             Subscription subscription = Subscription.create(subParams);
 
-            // Сохраняем подписку в БД
             UserSubscription userSubscription = UserSubscription.builder()
                     .subscriptionId(subscription.getId())
                     .userId(Long.parseLong(request.get("userId")))
@@ -113,17 +117,61 @@ public class SubscriptionService {
         }
     }
 
-    public Mono<Boolean> hasActiveSubscription(String customerId) {
-        try {
-            SubscriptionListParams params = SubscriptionListParams.builder()
-                    .setCustomer(customerId)
-                    .setStatus(SubscriptionListParams.Status.ACTIVE)
-                    .build();
+    public boolean ValidateUserAccess(String email) {
+        Optional<UserSubscription> userSubscriptionOpt = userSubscriptionRepository.findByUserEmail(email);
+        Optional<User> userOpt = userRepository.findByEmail(email);
 
-            List<Subscription> subscriptions = Subscription.list(params).getData();
-            return Mono.just(!subscriptions.isEmpty());
-        } catch (StripeException e) {
-            return Mono.just(false);
+        if (userOpt.isEmpty()) {
+            return false;
         }
+
+        User user = userOpt.get();
+
+        if ("ROLE_ADMIN".equals(user.getRole())) {
+            return true;
+        }
+
+        if (userSubscriptionOpt.isPresent()) {
+            UserSubscription subscription = userSubscriptionOpt.get();
+            return checkStripeSubscription(subscription);
+        }
+
+        return handleFreeUserAccess(user);
+    }
+
+    private boolean checkStripeSubscription(UserSubscription subscription) {
+        try {
+            Subscription stripeSubscription = Subscription.retrieve(subscription.getSubscriptionId());
+
+            if (stripeSubscription.getStatus().equals("active")) {
+                return true;
+            }
+
+            if (stripeSubscription.getCancelAtPeriodEnd()) {
+                return LocalDateTime.now().isBefore(LocalDateTime.ofEpochSecond(stripeSubscription.getCurrentPeriodEnd(), 0, java.time.ZoneOffset.UTC));
+            }
+
+        } catch (StripeException e) {
+            return false;
+        }
+
+        return false;
+    }
+
+    private boolean handleFreeUserAccess(User user) {
+        LocalDateTime now = LocalDateTime.now();
+
+        if (user.getRequestLimitResetTime() == null || now.isAfter(user.getRequestLimitResetTime())) {
+            user.setRequestCount(0);
+            user.setRequestLimitResetTime(now.plusHours(RESET_INTERVAL_HOURS));
+        }
+
+        if (user.getRequestCount() < MAX_FREE_REQUESTS) {
+            user.setRequestCount(user.getRequestCount() + 1);
+            userRepository.save(user);
+            return true;
+        }
+
+        return false;
     }
 }

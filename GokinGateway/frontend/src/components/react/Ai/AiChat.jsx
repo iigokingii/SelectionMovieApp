@@ -2,14 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Box, TextField, IconButton, Typography, Paper, List, ListItem, ListItemText } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import '../../../static/AiChat/AiChat.css';
-import Header from '../Header/Header';
+import { useSelector } from 'react-redux';
 
 const AiChat = () => {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef(null);
-
+    const credentials = useSelector(state => state.credentialReducer.credentials);
     function formatResponse(response) {
         const withoutStars = response.replace(/\*\*/g, '');
         const points = withoutStars.split(/(?=\d+\.\s)/);
@@ -24,22 +24,26 @@ const AiChat = () => {
             setInput('');
             setIsLoading(true);
             try {
-                const response = await fetch('http://localhost:8082/aiservice/api/ai-chat', {
+                const response = await fetch(`http://localhost:8082/aiservice/api/ai-chat?email=${credentials.email}`, {
                     method: 'POST',
                     credentials: 'include',
                     headers: {
-                        'Content-Type': 'application/json', // Указываем тип контента
+                        'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ message: input }), // Передаём данные в теле запроса
+                    body: JSON.stringify({ message: input }),
                 });
 
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-
+                // if (!response.ok) {
+                //     throw new Error('Network response was not ok');
+                // }
                 const data = await response.json();
-                const botMessageText = data.response;
-
+                var botMessageText = '';
+                if(data.status === 403){
+                    botMessageText = data.message;
+                }
+                else{
+                    botMessageText = data.response;
+                }
                 if (botMessageText) {
                     const botMessage = {
                         text: formatResponse(botMessageText),
@@ -71,7 +75,10 @@ const AiChat = () => {
     };
 
     useEffect(() => {
-        fetch('http://localhost:8082/aiservice/api/ai-chat/new-dialog', { method: 'POST' });
+        fetch('http://localhost:8082/aiservice/api/ai-chat/new-dialog', { method: 'POST', credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            }, });
     }, []);
 
     useEffect(() => {

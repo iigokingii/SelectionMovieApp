@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Button } from '@mui/material';
 import { useDispatch } from "react-redux";
@@ -7,7 +7,8 @@ import { Card, CardContent, CardMedia, Typography, Grid, Box } from '@mui/materi
 import { addMovie } from '../../../redux/Movies/action';
 
 const MovieCardKP = ({ movie, idx }) => {
-  const kp = new KinopoiskDev('FRS0QBR-W624BQ5-H8FVGZD-6EW7ZHY');  
+  const kp = new KinopoiskDev('FRS0QBR-W624BQ5-H8FVGZD-6EW7ZHY');
+  const [addedMovie, setMovie] = useState({});  
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const handleClick = () => {
@@ -43,9 +44,27 @@ const MovieCardKP = ({ movie, idx }) => {
     });
 
     if (response.ok) {
-      const movie = await response.json();
-      dispatch(addMovie(movie));
+      const addedMovieResp = await response.json();
+      dispatch(addMovie(addedMovieResp));
+      setMovie(addedMovieResp);
     }
+
+    // const actors = responseKP.persons.filter(person => person.profession === 'actor');
+    // for(var idx = 0; idx < 5 && idx< actors.length; idx ++){
+    //   const response = await fetch(`http://localhost:8082/filmservice/api/films/${movie.id}/actors`, {
+    //     method: 'POST',
+    //     credentials: 'include',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify(convertedMovie),
+    //   });
+  
+    //   if (response.ok) {
+    //     const movie = await response.json();
+    //     dispatch(addMovie(movie));
+    //   }
+    // }
   };
 
   return (

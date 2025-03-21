@@ -26,6 +26,7 @@ import Chat from './components/react/Chat/Chat';
 import ResetPasswordForm from './components/react/Authorization/ResetPasswordForm';
 import ForgetPasswordForm from './components/react/Authorization/ForgetPasswordForm';
 import SubscriptionForm from './components/react/Subscription/SubscriptionForm';
+import Quiz from './components/react/Quizes/Quiz';
 
 function App() {
   const location = useLocation();
@@ -144,6 +145,9 @@ function App() {
         <Route path="/unauthorized" element={<Unauthorized/>} />
         <Route path="/main" element={
           <ProtectedRoute roles={['admin', 'user']} element={<MainPage />} />
+        } />
+        <Route path="/quiz" element={
+          <ProtectedRoute roles={['admin', 'user']} element={<Quiz />} />
         } />
         <Route path="/subscription-form" element={
           <ProtectedRoute roles={['user']} element={<SubscriptionForm />} />

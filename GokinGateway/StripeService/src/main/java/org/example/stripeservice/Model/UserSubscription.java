@@ -3,6 +3,8 @@ package org.example.stripeservice.Model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "user_subscription")
 @Getter

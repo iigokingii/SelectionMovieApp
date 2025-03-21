@@ -28,6 +28,7 @@ const Header = () => {
       { link: "/liked", title: "Избранное" },
       { link: "/settings", title: "Настройки" },
       { link: "/ai-chat", title: "Чат с ИИ" },
+      { link: "/quiz", title: "Квизы" },
       { link: "/subscription-form", title: "Офомить подписку" },
       { link: "/chat", title: "Чат с поддержкой" },
       { link: "/logout", title: "Выход" },

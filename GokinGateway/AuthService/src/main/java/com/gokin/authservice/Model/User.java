@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -17,29 +18,35 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "users")
-public class User implements UserDetails{
+public class User implements UserDetails {
 	@Id
 	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_id_seq")
 	@SequenceGenerator(name = "user_id_seq", sequenceName = "user_id_seq", allocationSize = 1)
 	private Long id;
-	
+
 	@Column(name = "username", nullable = false)
 	private String username;
 
 	@Column(name = "password")
 	@JsonIgnore
 	private String password;
-	
-	@Column(name = "email", nullable = false)
+
+	@Column(name = "email", nullable = false, unique = true)
 	private String email;
-	
+
 	@Enumerated(EnumType.STRING)
 	@Column(name = "role", nullable = false)
 	private Role role;
 
 	@Column(name = "avatar", nullable = false, length = 50000)
 	private String avatar;
+
+	@Column(name = "request_count")
+	private Integer requestCount = 0;
+
+	@Column(name = "request_limit_reset_time")
+	private LocalDateTime requestLimitResetTime;
 
 	@JsonIgnore
 	@Transient
@@ -60,30 +67,29 @@ public class User implements UserDetails{
 	@JsonIgnore
 	@Transient
 	private boolean enabled;
-	
+
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		return List.of(new SimpleGrantedAuthority(role.name()));
 	}
-	
+
 	@Override
 	public boolean isAccountNonExpired() {
 		return true;
 	}
-	
+
 	@Override
 	public boolean isAccountNonLocked() {
 		return true;
 	}
-	
+
 	@Override
 	public boolean isCredentialsNonExpired() {
 		return true;
 	}
-	
+
 	@Override
 	public boolean isEnabled() {
 		return true;
 	}
 }
-

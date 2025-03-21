@@ -40,6 +40,7 @@
 
 package com.example.gokingateway.Config;
 
+import com.example.gokingateway.Filters.SubscriptionValidationFilter;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.route.RouteLocator;
@@ -54,9 +55,11 @@ import reactor.core.publisher.Mono;
 public class GatewayConfig {
 
 	private final AuthenticationFilter authenticationFilter;
+	private final SubscriptionValidationFilter subscriptionValidationFilter;
 
-	public GatewayConfig(AuthenticationFilter authenticationFilter) {
+	public GatewayConfig(AuthenticationFilter authenticationFilter,  SubscriptionValidationFilter subscriptionValidationFilter) {
 		this.authenticationFilter = authenticationFilter;
+		this.subscriptionValidationFilter = subscriptionValidationFilter;
 	}
 
 	@Bean
@@ -90,9 +93,12 @@ public class GatewayConfig {
 						)
 						.uri("lb://QuizService"))
 				.route("AiService", r -> r.path("/aiservice/**")
-						.filters(f -> f.stripPrefix(1)
+						.filters(f -> f
+								.filter(subscriptionValidationFilter.apply(new SubscriptionValidationFilter.Config())) // Применяем фильтр подписки
+								.stripPrefix(1)
 						)
-						.uri("lb://AiService"))
+						.uri("lb://AiService")
+				)
 				.build();
 	}
 

@@ -29,5 +29,9 @@ public class SubscriptionController {
         return subscriptionService.CancelSubscription(request);
     }
 
-
+    //todo add ValidateUserAccess control
+    @GetMapping("/validate")
+    public boolean Validate(@RequestParam String email) {
+        return subscriptionService.ValidateUserAccess(email);
+    }
 }
