@@ -1,39 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
-  Button,
   Typography,
-  RadioGroup,
+  Checkbox,
   FormControlLabel,
-  Radio,
-  Pagination,
   Box,
+  Pagination,
   Snackbar,
   Alert,
+  Button,
+  CircularProgress,
+  Card,
+  CardContent,
 } from "@mui/material";
-
-// Функция для перевода текста через Google Translate API
-const translateText = async (text) => {
-  try {
-    const response = await fetch(
-      `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=ru&dt=t&q=${encodeURIComponent(text)}`
-    );
-
-    // Проверяем, что запрос прошел успешно
-    if (!response.ok) {
-      throw new Error("Ошибка при запросе перевода");
-    }
-
-    const data = await response.json();
-
-    // В data[0] будут содержаться переведенные строки
-    const translatedText = data[0].map((item) => item[0]).join(' '); // Объединяем все переведенные части в одну строку
-    return translatedText;
-  } catch (error) {
-    console.error("Ошибка при переводе:", error);
-    return text; // Возвращаем оригинальный текст, если произошла ошибка
-  }
-};
 
 const Quiz = () => {
   const [questions, setQuestions] = useState([]);
@@ -42,35 +21,19 @@ const Quiz = () => {
   const [quizFetched, setQuizFetched] = useState(false);
   const [isError, setIsError] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [responseTitle, setResponseTitle] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [suggestedMovies, setSuggestedMovies] = useState(null);
 
-  // Функция для получения и перевода вопросов
-  const fetchQuiz = async () => {
+  const fetchQuiz = async (questionCount = 20) => {
     setIsError(false);
     try {
       const response = await fetch(
-        `https://opentdb.com/api.php?amount=20&category=11&difficulty=easy&type=multiple`
+        `http://localhost:8082/quizservice/api/quizzes/random?questionCount=${questionCount}`
       );
       const data = await response.json();
-      if (data.response_code === 0) {
-        // Переводим вопросы и ответы по одному
-        const translatedQuestions = await Promise.all(
-          data.results.map(async (q) => {
-            const translatedQuestion = await translateText(q.question);
-            const translatedAnswers = await Promise.all(
-              q.incorrect_answers.map(async (answer) => await translateText(answer))
-            );
-            const translatedCorrectAnswer = await translateText(q.correct_answer);
-
-            return {
-              ...q,
-              question: translatedQuestion,
-              incorrect_answers: translatedAnswers,
-              correct_answer: translatedCorrectAnswer,
-            };
-          })
-        );
-
-        setQuestions(translatedQuestions);
+      if (data && data.questions.length > 0) {
+        setQuestions(data.questions);
         setAnswers({});
         setPage(1);
         setQuizFetched(true);
@@ -84,24 +47,95 @@ const Quiz = () => {
     }
   };
 
-  const handleAnswerChange = (questionIndex, answer) => {
-    setAnswers((prev) => ({ ...prev, [questionIndex]: answer }));
+  const handleAnswerChange = (questionIndex, answer, isChecked) => {
+    setAnswers((prev) => {
+      const updatedAnswers = { ...prev };
+      if (!updatedAnswers[questionIndex]) {
+        updatedAnswers[questionIndex] = [];
+      }
+      if (isChecked) {
+        updatedAnswers[questionIndex].push(answer);
+      } else {
+        updatedAnswers[questionIndex] = updatedAnswers[questionIndex].filter(
+          (item) => item !== answer
+        );
+      }
+      return updatedAnswers;
+    });
   };
 
-  const handleSubmit = () => {
-    if (Object.keys(answers).length < 20) {
-      alert("Ответьте на все вопросы!");
-      return;
-    }
-
-    let score = 0;
+  const handleSubmit = async () => {
+    setLoading(true);
+    const userResponses = [];
     questions.forEach((q, index) => {
-      if (answers[index] === q.correct_answer) {
-        score++;
+      const selectedAnswers = answers[index] || [];
+      if (selectedAnswers.length > 0) {
+        userResponses.push({
+          question: q.text,
+          selectedAnswers: selectedAnswers.join(", "),
+        });
       }
     });
 
-    console.log(`Вы набрали ${score} из 20`);
+    console.log("Ответы пользователя:", userResponses);
+
+    try {
+      const response = await fetch(
+        `http://localhost:8082/aiservice/api/suggest-movies`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(userResponses),
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setResponseTitle(data.response);
+
+        const moviesArray = data.movies.split("\n").map((movie, index) => {
+          // Обновленное регулярное выражение для извлечения названия, оригинального названия и года, рейтингов, жанров и описания
+          const regex = /^(\d+\.)\s*(.*?)(?:\s*\(([^)]+)\))?\.\s*Рейтинг:\s*KP:\s*(\d+\.\d+),\s*IMDB:\s*(\d+\.\d+)\.\s*Жанры:\s*(.*?)\.\s*Описание:\s*(.*)$/;
+
+          // Применяем регулярное выражение к строке фильма
+          const match = movie.match(regex);
+
+          if (match) {
+            const title = match[2].trim(); // Оригинальное название фильма
+            const originalTitle = match[3]?.trim() || ''; // Название в скобках, например, "(The Lives of Others, 2006)"
+            const ratingKP = match[4]; // Рейтинг KP
+            const ratingIMDB = match[5]; // Рейтинг IMDB
+            const genres = match[6].trim(); // Жанры
+            const description = match[7].trim(); // Описание
+
+            console.log(`Заголовок: ${title}`);
+            console.log(`Оригинальное название: ${originalTitle}`);
+            console.log(`Рейтинг KP: ${ratingKP}`);
+            console.log(`Рейтинг IMDb: ${ratingIMDB}`);
+            console.log(`Жанры: ${genres}`);
+            console.log(`Описание: ${description}`);
+
+            return { title, originalTitle, ratingKP, ratingIMDB, genres, description };
+          } else {
+            console.warn(`Фильм не соответствует формату: ${movie}`);
+            return null; // Если не нашли совпадений, пропускаем фильм
+          }
+        }).filter(movie => movie !== null); // Убираем null значения, если фильм не соответствует формату
+
+        setSuggestedMovies(moviesArray);
+      }
+      else {
+        setIsError(true);
+        setOpenSnackbar(true);
+      }
+    } catch (error) {
+      console.error("Ошибка при получении данных о фильмах:", error);
+      setIsError(true);
+      setOpenSnackbar(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const questionsPerPage = 10;
@@ -112,61 +146,84 @@ const Quiz = () => {
     setOpenSnackbar(false);
   };
 
+  useEffect(() => {
+    fetchQuiz(20);
+  }, []);
+
   return (
     <Container maxWidth="md">
-      <Typography variant="h4" align="center" gutterBottom>
-        Генератор квизов
-      </Typography>
-
-      <Button
-        variant="contained"
-        color="primary"
-        sx={{ display: "flex", justifyContent: "center", margin: "0 auto" }}
-        onClick={fetchQuiz}
-      >
-        Сгенерировать квиз
-      </Button>
-
-      {quizFetched && (
-        <Box sx={{ mt: 3 }}>
-          {paginatedQuestions.map((q, index) => (
-            <Box key={index} sx={{ mb: 2 }}>
-              <Typography variant="h6">
-                {q.question}
-              </Typography>
-
-              <RadioGroup
-                value={answers[startIndex + index] || ""}
-                onChange={(e) => handleAnswerChange(startIndex + index, e.target.value)}
-              >
-                {[...q.incorrect_answers, q.correct_answer]
-                  .sort()
-                  .map((option, i) => (
-                    <FormControlLabel
-                      key={i}
-                      value={option}
-                      control={<Radio />}
-                      label={option}
-                    />
+      {quizFetched && !loading && !suggestedMovies && (
+        <Box>
+          <Typography variant="h4" gutterBottom>
+            Квиз, для определения рекомендаций
+          </Typography>
+          <Box sx={{ mt: 3 }}>
+            {paginatedQuestions.map((q, index) => (
+              <Box key={startIndex + index} sx={{ mb: 2 }}>
+                <Typography variant="h6">{q.text}</Typography>
+                <Box>
+                  {q.answers.map((option, i) => (
+                    <Box key={i} sx={{ marginBottom: "8px" }}>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={answers[startIndex + index]?.includes(option.text) || false}
+                            onChange={(e) =>
+                              handleAnswerChange(
+                                startIndex + index,
+                                option.text,
+                                e.target.checked
+                              )
+                            }
+                          />
+                        }
+                        label={option.text}
+                      />
+                    </Box>
                   ))}
-              </RadioGroup>
-            </Box>
+                </Box>
+              </Box>
+            ))}
+
+            <Pagination
+              count={Math.ceil(questions.length / questionsPerPage)}
+              page={page}
+              onChange={(_, value) => setPage(value)}
+              sx={{ mt: 2, mb: 2 }}
+            />
+
+            {page === Math.ceil(questions.length / questionsPerPage) && (
+              <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+                <Button variant="contained" color="secondary" onClick={handleSubmit}>
+                  Завершить квиз
+                </Button>
+              </Box>
+            )}
+          </Box>
+        </Box>
+      )}
+
+      {loading && (
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+          <CircularProgress />
+        </Box>
+      )}
+
+      {suggestedMovies && (
+        <Box sx={{ mt: 1 }}>
+          <Typography variant="h5" gutterBottom>
+            {responseTitle}
+          </Typography>
+          {suggestedMovies.map((movie, index) => (
+            <Card key={index} sx={{ mb: 2 }}>
+              <CardContent>
+                <Typography variant="h6">{movie.title} ({`Original name: ${movie.originalTitle.split(',')[0]}, ${movie.originalTitle.split(',')[1]}`})</Typography>
+                <Typography variant="body2">Рейтинг: KP {movie.ratingKP} IMdB: {movie.ratingIMDB}</Typography>
+                <Typography variant="body2">Жанры: {movie.genres}</Typography>
+                <Typography variant="body2">Краткое описание: {movie.description}</Typography>
+              </CardContent>
+            </Card>
           ))}
-
-          <Pagination
-            count={2}
-            page={page}
-            onChange={(_, value) => setPage(value)}
-            sx={{ mt: 2, mb: 2 }}
-          />
-
-          {page === 2 && (
-            <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-              <Button variant="contained" color="secondary" onClick={handleSubmit}>
-                Завершить квиз
-              </Button>
-            </Box>
-          )}
         </Box>
       )}
 

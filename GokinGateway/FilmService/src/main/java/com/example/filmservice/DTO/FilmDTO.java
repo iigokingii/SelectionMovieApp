@@ -2,6 +2,7 @@ package com.example.filmservice.DTO;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 
@@ -43,5 +44,5 @@ public class FilmDTO {
     String title;
 
     @Schema(description = "URL постера фильма", example = "https://example.com/poster.jpg")
-    String poster;
+    MultipartFile poster;
 }

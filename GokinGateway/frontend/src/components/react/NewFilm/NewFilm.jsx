@@ -25,7 +25,7 @@ const NewFilm = () => {
     duration: '',
     original_title: '',
     title: '',
-    poster: '',
+    poster: null,
   });
 
   const [errors, setErrors] = useState({});
@@ -45,8 +45,6 @@ const NewFilm = () => {
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
-    console.log('---------------------');
-    console.log(file);
 
     if (!file) return;
 
@@ -56,27 +54,10 @@ const NewFilm = () => {
 
     const formData = new FormData();
     formData.append("file", file);
-    console.log(formData);
-    try {
-      const response = await fetch("http://localhost:8082/filmservice/api/s3/upload", {
-        method: "POST",
-        body: formData
-      });
-
-      if (!response.ok) {
-        throw new Error("Ошибка загрузки файла");
-      }
-
-      const imageUrl = await response.text();
-      console.log("Uploaded file URL:", imageUrl);
-
-      setManualMovieDetails(prevDetails => ({
-        ...prevDetails,
-        poster: imageUrl
-      }));
-    } catch (error) {
-      console.error("Upload error:", error);
-    }
+    setManualMovieDetails((prevDetails) => ({
+      ...prevDetails,
+      poster: formData
+    }))
   };
 
 
@@ -99,7 +80,6 @@ const NewFilm = () => {
 
     const imdbRating = Number(manualMovieDetails.imdb_rating.toString().replace(',', '.'));
     const kinopoiskRating = Number(manualMovieDetails.kinopoisk_rating.toString().replace(',', '.'));
-    console.log({imdbRating, kinopoiskRating});
     if (imdbRating < 0 || imdbRating > 10 || _.isNaN(imdbRating)) {
       newErrors.imdb_rating = 'IMDB рейтинг должен быть от 0 до 10.';
     }
@@ -113,9 +93,7 @@ const NewFilm = () => {
     } else if (isNaN(postingDate.getTime())) {
       newErrors.year_of_posting = 'Некорректная дата. Пожалуйста, используйте формат YYYY-MM-DD.';
     }
-    console.log('asd', manualMovieDetails.total_box_office.toString().replace(',', '.'));
     const boxOfficeValue = Number(manualMovieDetails.total_box_office.toString().replace(',', '.'));
-    console.log(boxOfficeValue);
     if (boxOfficeValue === '' || isNaN(boxOfficeValue)) {
       newErrors.total_box_office = 'Кассовые сборы должны быть числом.';
     }
@@ -133,7 +111,7 @@ const NewFilm = () => {
       newErrors.description = 'Описание не может превышать 2000 символов.';
     }
 
-    if (!manualMovieDetails.poster) {
+    if (_.isNil(manualMovieDetails.poster)) {
       newErrors.poster = 'Пожалуйста, загрузите постер для фильма.';
     }
 
@@ -168,7 +146,8 @@ const NewFilm = () => {
     if (!validateForm() && !openDialog) return;
 
     if (isAddViaApi) {
-    } else {
+    } 
+    else {
       const response = await fetch('http://localhost:8082/filmservice/api/films/film', {
         method: 'POST',
         credentials: 'include',
@@ -194,7 +173,7 @@ const NewFilm = () => {
           duration: '',
           original_title: '',
           title: '',
-          poster: '',
+          poster: null,
         });
         setErrors({});
       } else {
@@ -390,7 +369,7 @@ const NewFilm = () => {
                     id="upload-image"
                     type="file"
                     style={{ display: 'none' }}
-                    onChange={(event) => handleFileUpload(event)}
+                    onChange={async (event) => await handleFileUpload(event)}
                   />
                   <Button
                     variant="contained"

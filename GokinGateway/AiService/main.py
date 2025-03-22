@@ -1,11 +1,11 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 from flasgger import Swagger
 import g4f
 import asyncio
 import threading
 import atexit
 from py_eureka_client.eureka_client import EurekaClient
-
+import json
 
 # Параметры приложения
 Port = 8086
@@ -62,28 +62,56 @@ def newDialog():
 
 @app.route('/api/ai-chat', methods=['POST'])
 def chat():
-    # Получаем данные из тела запроса
     data = request.get_json()
     user_message = data.get('message', 'Hello')
 
-    # Добавляем сообщение пользователя в историю диалога
     dialog_history.append({"role": "user", "content": user_message})
 
-    # Добавляем системное сообщение, если это первый запрос
     if len(dialog_history) == 1:
         dialog_history.insert(0, {"role": "system", "content": "Пожалуйста, отвечайте на русском языке."})
 
-    # Получаем ответ от AI
     response_content = g4f.ChatCompletion.create(
         model=g4f.models.gpt_4,
         messages=dialog_history,
     )
 
-    # Добавляем ответ AI в историю диалога
     dialog_history.append({"role": "assistant", "content": response_content})
 
-    # Возвращаем ответ в формате JSON
     return jsonify(response=response_content)
+
+@app.route('/api/suggest-movies', methods=['POST'])
+def suggest_movies():
+    data = request.get_json()
+    dialog_history_suggestions = []
+
+    prompt = ("Какие фильмы посоветуешь на основе следующих ответов (только названия):\n")
+
+    for item in data:
+        question = item.get('question', '')
+        selected_answers = item.get('selectedAnswers', '')
+        prompt += f"\nВопрос: {question}\nОтвет: {selected_answers}"
+
+    prompt += ("\nПожалуйста, предложи 20 фильмов в порядке наибольшего соответствия. "
+               "Для каждого фильма укажи следующую информацию:\n"
+               "Название RU (Название EN, год выхода). Рейтинг: KP: [рейтинг], IMDB: [рейтинг]. Жанры: [жанры] Описание: [такое описание сюжета, которое должно заинтересовать пользователя, должно быть развёрнутым]. "
+               "Без специальных символов в виде звёзд, и с нумерацией только рядом с названием, фильмы между собой разделяются симвовлом '\n'.")
+
+    dialog_history_suggestions.append({"role": "system", "content": prompt})
+
+    response_content = g4f.ChatCompletion.create(
+        model=g4f.models.gpt_4,
+        messages=dialog_history_suggestions,
+    )
+    dialog_history_suggestions.clear()
+    response_data = {
+        "response": "На основе ваших ответов, вот 20 фильмов, которые могут вам подойти в порядке наибольшего соответствия:",
+        "movies": response_content
+    }
+    return Response(
+        response=json.dumps(response_data, ensure_ascii=False),
+        content_type='application/json; charset=utf-8'
+    )
+
 
 # Новый эндпоинт для получения спецификации OpenAPI
 @app.route('/v3/api-docs', methods=['GET'])
@@ -188,7 +216,6 @@ def api_docs():
         "components": {}
     }
     return jsonify(spec)
-
 
 # Запуск клиента Eureka в отдельном потоке
 def run_eureka():
