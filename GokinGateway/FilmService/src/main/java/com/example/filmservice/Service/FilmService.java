@@ -75,6 +75,7 @@ public class FilmService {
 				.originalTitle(film.getOriginal_title())
 				.yearOfPosting(film.getYear_of_posting())
 				.totalBoxOffice(film.getTotal_box_office())
+				.youtubeUrl(film.getYoutubeUrl())
 				.actors(List.of())
 				.directors(List.of())
 				.genres(List.of())
@@ -297,6 +298,7 @@ public class FilmService {
 		existingFilm.setDescription(filmDetails.getDescription());
 		existingFilm.setDuration(filmDetails.getDuration());
 		existingFilm.setPoster(filmDetails.getPoster());
+		existingFilm.setYoutubeUrl(filmDetails.getYoutubeUrl());
 
 		return filmRepository.save(existingFilm);
 	}

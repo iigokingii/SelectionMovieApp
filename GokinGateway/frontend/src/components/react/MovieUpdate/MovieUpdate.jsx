@@ -16,6 +16,7 @@ const MovieUpdate = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [changed, setChange] = useState(false);
   const [description, setDescription] = React.useState('');
   const maxCharCount = 2000;
 
@@ -35,6 +36,7 @@ const MovieUpdate = () => {
     original_title: '',
     title: '',
     poster: null,
+    youtubeUrl: '',
   });
 
   const [errors, setErrors] = useState({});
@@ -53,6 +55,7 @@ const MovieUpdate = () => {
         original_title: movie.originalTitle || '',
         title: movie.title || '',
         poster: movie.poster || '',
+        youtubeUrl: movie.youtubeUrl || '',
       });
       setPreview(movie.poster);
     }
@@ -68,7 +71,7 @@ const MovieUpdate = () => {
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
-
+    console.log('handleFileUpload');
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
@@ -79,8 +82,9 @@ const MovieUpdate = () => {
       ...prevDetails,
       poster: file
     }));
-
+    console.log('handleFileUpload2');
     setPreview(URL.createObjectURL(file));
+    setChange(true);
   };
 
   const handleDialogCancel = () => {
@@ -94,6 +98,12 @@ const MovieUpdate = () => {
     const ageValue = Number(movieDetails.age);
     const existingTitles = movies.map(m => m.title.toLowerCase());
     const existingOriginalTitles = movies.map(m => m.originalTitle.toLowerCase());
+
+    const youtubeUrlPattern = /^(https?\:\/\/)?(www\.youtube\.com|youtube\.com)\/(watch\?v=|embed\/)([a-zA-Z0-9_-]{11})$/;
+
+    if (movieDetails.youtubeUrl && !youtubeUrlPattern.test(movieDetails.youtubeUrl)) {
+      newErrors.youtubeUrl = 'Пожалуйста, введите корректную ссылку на YouTube.';
+    }
     
     if (_.isNaN(ageValue)) {
       newErrors.age = 'Возраст должен быть числом.';
@@ -187,9 +197,12 @@ const MovieUpdate = () => {
         duration: movieDetails.duration,
         original_title: movieDetails.original_title,
         title: movieDetails.title,
+        youtubeUrl: movieDetails.youtubeUrl,
+        poster: !changed ? movieDetails.poster : '',
       })], { type: "application/json" }));
 
-      if (movieDetails.poster instanceof File) {
+      if (changed && movieDetails.poster instanceof File) {
+        console.log('changed: ', changed);
         formData.append("poster", movieDetails.poster);
       }
 
@@ -198,15 +211,6 @@ const MovieUpdate = () => {
         credentials: 'include',
         body: formData,
       });
-
-      // const response = await fetch(`http://localhost:8082/filmservice/api/films/film/${movie.id}`, {
-      //   method: 'POST',
-      //   credentials: 'include',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(movieDetails),
-      // });
 
       if (response.ok) {
         const updatedMovie = await response.json();
@@ -246,8 +250,8 @@ const MovieUpdate = () => {
 
   return (
     <React.Fragment>
-      <Box className="new-movie-wrapper">
-        <Box sx={{ maxWidth: '600px', width: '100%' }}>
+      <Box className="new-movie-wrapper">        
+        <Box sx={{ maxWidth: '600px', width: '100%', minHeight:"91vh", backgroundColor:"white", padding: "0px 350px", paddingBottom:"20px" }}>
           <Typography variant="h4" gutterBottom>
             Изменение информации о фильме
           </Typography>
@@ -363,6 +367,18 @@ const MovieUpdate = () => {
                 placeholder="Введите продолжительность фильма"
                 error={!!errors.duration}
                 helperText={errors.duration}
+                sx={{ marginBottom: 2, backgroundColor: '#fff' }}
+              />
+              <TextField
+                label="Ссылка на YouTube (Трейлер)"
+                variant="outlined"
+                fullWidth
+                name="youtubeUrl"
+                value={movieDetails.youtubeUrl}
+                onChange={handleMovieChange}
+                placeholder="Введите URL трейлера на YouTube"
+                error={!!errors.youtubeUrl}
+                helperText={errors.youtubeUrl}
                 sx={{ marginBottom: 2, backgroundColor: '#fff' }}
               />
               <Box>

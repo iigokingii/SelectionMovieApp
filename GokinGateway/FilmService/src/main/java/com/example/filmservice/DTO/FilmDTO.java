@@ -45,4 +45,6 @@ public class FilmDTO {
 
     @Schema(description = "URL постера фильма", example = "https://example.com/poster.jpg")
     String poster;
+
+    String youtubeUrl;
 }

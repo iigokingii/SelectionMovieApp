@@ -78,7 +78,7 @@ public class FilmController {
 
             if (poster != null && existingFilm.isPresent()) {
                 var existfilm = existingFilm.get();
-                s3Service.DeleteFile(existfilm.getPoster());
+                //s3Service.DeleteFile(existfilm.getPoster());
                 String newPosterUrl = s3Service.uploadFile(poster);
                 filmDetails.setPoster(newPosterUrl);
             }

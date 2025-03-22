@@ -12,6 +12,7 @@ import MovieDetail from "./MovieDetail/MovieDetail";
 import MovieStaff from "./MovieStaff/MovieStaff";
 import MovieComment from "./MovieComment/MovieComment";
 import StarIcon from '@mui/icons-material/Star';
+import TrailerPlayer from "../TrailerPlayer/TrailerPlayer";
 
 const MovieView = () => {
   const { movieId } = useParams();
@@ -85,14 +86,16 @@ const MovieView = () => {
 
     const recommendations = movies.filter(m =>
       m.genres?.some(genre =>
-        findMovie.genres?.some(fg => fg.name === genre.name)
+        findMovie.genres?.some(fg => fg.name === genre.name && m.id !== findMovie.id)
       )
     );
+    const shuffledRecommendations = recommendations.slice();
+    for (let i = shuffledRecommendations.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledRecommendations[i], shuffledRecommendations[j]] = [shuffledRecommendations[j], shuffledRecommendations[i]]; // Меняем местами
+    }
 
-    setRecommendedMovies(recommendations);
-    console.log('recommendations')
-    console.log(recommendations);
-    console.log('/recommendations')
+    setRecommendedMovies(shuffledRecommendations);
   }, [movies, movieId, navigate]);
 
   if (loading) {
@@ -222,8 +225,11 @@ const MovieView = () => {
             {movie.description}
           </div>
         </div>
+        {!_.isNull(movie.youtubeUrl) && movie.youtubeUrl !== ""
+          ? <TrailerPlayer videoUrl={movie.youtubeUrl} />
+          : null}
         {!_.isNull(recommendedMovies)
-          ? <Box sx={{ position: "relative", width: "100%",maxWidth: "100%", 
+          ? <Box sx={{ position: "relative", width: "100%", maxWidth: "100%", 
             overflow: "hidden",  overflow: "hidden", bgcolor: "white"}}>
             {showArrows && (
               <IconButton

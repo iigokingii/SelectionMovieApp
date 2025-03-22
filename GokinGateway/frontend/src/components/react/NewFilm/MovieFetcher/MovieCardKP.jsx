@@ -73,9 +73,10 @@ const convertPerson = (person) => {
 };
 
 const handleAddGenre = async (genre, movieId) => {
+  console.log(genre);
   const response = await fetch(`http://localhost:8082/filmservice/api/films/${movieId}/genres`, {
       method: 'POST',
-      body: JSON.stringify({ name: genre.name }),
+      body: JSON.stringify({ name: genre.name, description: '' }),
       headers: {
           'Content-Type': 'application/json',
       },
@@ -84,7 +85,7 @@ const handleAddGenre = async (genre, movieId) => {
   if (response.ok) {
       const addedGenre = await response.json();
       dispatch(MovieOptionsActions.addUniqueGenre(addedGenre));
-      dispatch(Actions.addGenre(currentMovieId, addedGenre));
+      dispatch(Actions.addGenre(movieId, addedGenre));
   }
 };
 
