@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { TextField, Button, Box, Typography } from "@mui/material";
+import { Card, CardMedia, CardContent, IconButton } from "@mui/material";
+import { ArrowBack, ArrowForward } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
 import { addComment } from "../../redux/Movies/action";
 import { changeGokinRating } from "../../redux/Movies/action";
@@ -15,16 +17,35 @@ const MovieView = () => {
   const { movieId } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const scrollRef = useRef(null);
   const movies = useSelector((state) => state.movieReducer.movies);
   const credentials = useSelector((state) => state.credentialReducer.credentials);
-
   const [movie, setMovie] = useState({});
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState("");
-
+  const [recommendedMovies, setRecommendedMovies] = useState([]);
   const [rating, setRating] = useState(null);
   const [hovered, setHovered] = useState(null);
   const [isRating, setIsRating] = useState(false);
+  const [showArrows, setShowArrows] = useState(false);
+
+  const scroll = (direction) => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: direction === "left" ? -300 : 300, behavior: "smooth" });
+    }
+  };
+
+  useEffect(() => {
+    const checkScroll = () => {
+      if (scrollRef.current) {
+        setShowArrows(scrollRef.current.scrollWidth > scrollRef.current.clientWidth);
+      }
+    };
+
+    checkScroll();
+    window.addEventListener("resize", checkScroll);
+    return () => window.removeEventListener("resize", checkScroll);
+  }, [recommendedMovies]);
 
   const handleStarClick = async (index) => {
     setRating(index + 1);
@@ -59,6 +80,19 @@ const MovieView = () => {
       setMovie(findMovie);
       setLoading(false);
     }
+    console.log(movies);
+    if (!findMovie || !findMovie.genres) return;
+
+    const recommendations = movies.filter(m =>
+      m.genres?.some(genre =>
+        findMovie.genres?.some(fg => fg.name === genre.name)
+      )
+    );
+
+    setRecommendedMovies(recommendations);
+    console.log('recommendations')
+    console.log(recommendations);
+    console.log('/recommendations')
   }, [movies, movieId, navigate]);
 
   if (loading) {
@@ -108,24 +142,24 @@ const MovieView = () => {
               </div>
               <Box sx={{ display: "flex", flexDirection: "column" }}>
                 <Box sx={{ paddingLeft: "20px", display: "flex", alignItems: "center", marginRight: "40px" }}>
-                  {movie.imdbrating && (
+                  {movie.kinopoiskRating > 0 && (
                     <Typography>
                       Рейтинг Кинопоиск: <span style={{ color: "gold" }}>{movie.kinopoiskRating ? movie.kinopoiskRating.toFixed(1) : 'N/A'}</span>
                     </Typography>
                   )}
-                  {movie.imdbrating && (
+                  {movie.imdbrating > 0 && (
                     <Typography sx={{ marginLeft: "10px" }}>
                       Рейтинг IMDb: <span style={{ color: "gold" }}>{movie.imdbrating ? movie.imdbrating.toFixed(1) : 'N/A'}</span>
                     </Typography>
                   )}
-                  {movie.gokinRating && (
+                  {movie.gokinRating > 0 && (
                     <Typography sx={{ marginLeft: "10px" }}>
                       Рейтинг Gokin: <span style={{ color: "gold" }}>{movie.gokinRating ? movie.gokinRating.toFixed(1) : 'N/A'}</span>
                     </Typography>
                   )}
                 </Box>
                 {!isRating ? (
-                  <Box width={{ justifyContent: "center", display: "flex"}}>
+                  <Box width={{ justifyContent: "center", display: "flex" }}>
                     <Button
                       variant="contained"
                       onClick={handleButtonClick}
@@ -163,7 +197,7 @@ const MovieView = () => {
                 <MovieDetail movieDetailName="Сценарий" movieDetail={movie.screenWriters.map(screenWriter => screenWriter.name + " " + screenWriter.middleName + " " + screenWriter.surname).join(', ')} />
                 <MovieDetail movieDetailName="Оператор" movieDetail={movie.operators.map(operator => operator.name + " " + operator.middleName + " " + operator.surname).join(', ')} />
                 <MovieDetail movieDetailName="Композитор" movieDetail={movie.musicians.map(musician => musician.name + " " + musician.middleName + " " + musician.surname).join(', ')} />
-                <MovieDetail movieDetailName="Бюджет" movieDetail={movie.budget} />
+                {/* <MovieDetail movieDetailName="Бюджет" movieDetail={movie.budget} /> */}
                 <MovieDetail movieDetailName="Сборы в мире" movieDetail={movie.totalBoxOffice} />
                 <MovieDetail movieDetailName="Возраст" movieDetail={`${movie.age}+`} />
                 <MovieDetail movieDetailName="Время" movieDetail={`${movie.duration} мин`} />
@@ -188,6 +222,89 @@ const MovieView = () => {
             {movie.description}
           </div>
         </div>
+        {!_.isNull(recommendedMovies)
+          ? <Box sx={{ position: "relative", width: "100%",maxWidth: "100%", 
+            overflow: "hidden",  overflow: "hidden", bgcolor: "white"}}>
+            {showArrows && (
+              <IconButton
+                onClick={() => scroll("left")}
+                sx={{
+                  position: "absolute",
+                  left: 0,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  zIndex: 1,
+                  bgcolor: "white",
+                  boxShadow: 2,
+                  "&:hover": { bgcolor: "gray.300" }
+                }}
+              >
+                <ArrowBack />
+              </IconButton>
+            )}
+
+            <Box
+              ref={scrollRef}
+              sx={{
+                display: "flex",
+                gap: 2,
+                overflowX: "auto",
+                scrollBehavior: "smooth",
+                scrollbarWidth: "none",
+                "&::-webkit-scrollbar": { display: "none" },
+                whiteSpace: "nowrap",
+                p: 1,
+              }}
+            >
+              {recommendedMovies.map((movie) => (
+                <Card
+                  key={movie.id}
+                  onClick={() => navigate(`/movie/${movie.id}`)}
+                  sx={{
+                    minWidth: 200,
+                    cursor: "pointer",
+                    transition: "transform 0.2s",
+                    "&:hover": { transform: "scale(1.05)" }
+                  }}
+                >
+                  <CardMedia
+                    component="img"
+                    height="300"
+                    image={movie.poster}
+                    alt={movie.title}
+                    sx={{ objectFit: "cover" }}
+                  />
+                  <CardContent>
+                    <Typography variant="h6" noWrap>
+                      {movie.title}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      {new Date(movie.yearOfPosting).getFullYear()}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              ))}
+            </Box>
+
+            {showArrows && (
+              <IconButton
+                onClick={() => scroll("right")}
+                sx={{
+                  position: "absolute",
+                  right: 0,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  zIndex: 1,
+                  bgcolor: "white",
+                  boxShadow: 2,
+                  "&:hover": { bgcolor: "gray.300" }
+                }}
+              >
+                <ArrowForward />
+              </IconButton>
+            )}
+          </Box>
+          : null}
         <div className="movie-comments-wrapper">
           <Box sx={{ padding: "10px 40px 0px 40px", minWidth: "400px", maxWidth: "600px" }}>
             <Box
@@ -195,8 +312,7 @@ const MovieView = () => {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                marginBottom: 2,
-
+                marginBottom: 2, 
               }}
             >
               <Typography variant="h6">Добавить комментарий</Typography>

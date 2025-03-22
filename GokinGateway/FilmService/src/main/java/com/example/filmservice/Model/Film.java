@@ -20,19 +20,19 @@ public class Film {
 	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	@Column(name = "title", nullable = false)
+	@Column(name = "title")
 	private String title;
-	@Column(name = "original_title", nullable = false)
+	@Column(name = "original_title")
 	private String originalTitle;
-	@Column(name = "poster", nullable = false)
+	@Column(name = "poster")
 	private String poster;
-	@Column(name = "year_of_posting", nullable = false)
+	@Column(name = "year_of_posting")
 	private Date yearOfPosting;
-	@Column(name = "country_produced", nullable = false)
+	@Column(name = "country_produced")
 	private String countryProduced;
-	@Column(name = "description", nullable = false, length = 2000)
+	@Column(name = "description", length = 2000)
 	private String description;
-	@Column(name = "kinopoisk_rating", nullable = false)
+	@Column(name = "kinopoisk_rating")
 	private float kinopoiskRating;
 	@Column(name = "gokin_rating")
 	private float gokinRating;
@@ -43,13 +43,13 @@ public class Film {
 	private float budget;
 	@Column(name = "youtube_url")
 	private String youtubeUrl;
-	@Column(name = "IMDb_rating", nullable = false)
+	@Column(name = "IMDb_rating")
 	private float IMDBRating;
-	@Column(name = "total_box_office", nullable = false)
+	@Column(name = "total_box_office")
 	private float totalBoxOffice;
-	@Column(name = "age", nullable = false)
+	@Column(name = "age")
 	private int Age;
-	@Column(name = "duration", nullable = false)
+	@Column(name = "duration")
 	private String duration;
 	@ManyToMany
 	@JoinTable(

@@ -1,16 +1,27 @@
-.movie-detail-wrapper{
+.movie-detail-wrapper {
     display: flex;
     padding-top: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    align-items: flex-start;
 }
 
-.movie-detail-name{
-    width: 200px;
+.movie-detail-name {
+    flex: 0 0 200px;
     font-size: 14px;
     color: gray;
     font-weight: normal;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.movie-detail{
+.movie-detail {
+    flex: 1;
+    min-width: 0;
     font-size: 14px;
     color: black;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }

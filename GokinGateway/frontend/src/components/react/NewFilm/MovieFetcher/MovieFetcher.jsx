@@ -38,7 +38,7 @@ const MovieFetcher = () => {
     };
 
     const AddMovie = (movieIndx) => {
-        console.log(movieIndx);
+        // console.log(movieIndx);
         setMovies(movies.filter(movie => movie.id !== movieIndx));
     }
 
