@@ -7,7 +7,7 @@ import _ from 'lodash'
 const MovieFetcher = () => {
     const kp = new KinopoiskDev('FRS0QBR-W624BQ5-H8FVGZD-6EW7ZHY');
     const [movieName, setMovieName] = useState("");
-    const [limit, setLimit] = useState("");
+    const [limit, setLimit] = useState(10);
     const [page, setPage] = useState(1);
     const [pages, setPages] = useState(1);
     const [movies, setMovies] = useState([]);
@@ -37,6 +37,11 @@ const MovieFetcher = () => {
         );
     };
 
+    const AddMovie = (movieIndx) => {
+        console.log(movieIndx);
+        setMovies(movies.filter(movie => movie.id !== movieIndx));
+    }
+
     const renderFilms = () => {
         console.log({ page, pages });
     
@@ -47,7 +52,7 @@ const MovieFetcher = () => {
         const endIdx = Math.min(startIdx + parsedLimit, movies.length);
     
         return movies.slice(startIdx, endIdx).map((doc, indx) => (
-            <MovieCardKP key={doc.id} movie={doc} idx={startIdx + indx} />
+            <MovieCardKP key={doc.id} movie={doc} idx={startIdx + indx} AddMovie={AddMovie}/>
         ));
     };
     

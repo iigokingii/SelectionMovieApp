@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,7 +36,6 @@ public class FilmService {
 	@Autowired RestTemplate restTemplate;
 	@Autowired HttpServletRequest request;
 	@Autowired FavoriteFilmRepository favoriteFilmRepository;
-	@Autowired S3Service s3Service;
 	@Autowired RatingRepository ratingRepository;
 	@Autowired UserRepository userRepository;
 
@@ -64,34 +62,29 @@ public class FilmService {
 	}
 	@Transactional
 	public Film AddFilm(FilmDTO film){
-		try{
-			var posterUrl = s3Service.uploadFile(film.getPoster());
-			var filmGenerated = Film.builder()
-					.Age(film.getAge())
-					.description(film.getDescription())
-					.countryProduced(film.getCountry_produced())
-					.poster(posterUrl)
-					.title(film.getTitle())
-					.duration(film.getDuration())
-					.IMDBRating(film.getImdb_rating())
-					.kinopoiskRating(film.getKinopoisk_rating())
-					.originalTitle(film.getOriginal_title())
-					.yearOfPosting(film.getYear_of_posting())
-					.totalBoxOffice(film.getTotal_box_office())
-					.actors(List.of())
-					.directors(List.of())
-					.genres(List.of())
-					.musicians(List.of())
-					.operators(List.of())
-					.producers(List.of())
-					.screenWriters(List.of())
-					.comments(List.of())
-					.build();
-			return filmRepository.save(filmGenerated);
-		}
-		catch(IOException ex){
-			throw new RuntimeException("Error uploading the film poster, transaction rolled back.", ex);
-		}
+		//var posterUrl = s3Service.uploadFile(film.getPoster());
+		var filmGenerated = Film.builder()
+				.Age(film.getAge())
+				.description(film.getDescription())
+				.countryProduced(film.getCountry_produced())
+				.poster(film.getPoster())
+				.title(film.getTitle())
+				.duration(film.getDuration())
+				.IMDBRating(film.getImdb_rating())
+				.kinopoiskRating(film.getKinopoisk_rating())
+				.originalTitle(film.getOriginal_title())
+				.yearOfPosting(film.getYear_of_posting())
+				.totalBoxOffice(film.getTotal_box_office())
+				.actors(List.of())
+				.directors(List.of())
+				.genres(List.of())
+				.musicians(List.of())
+				.operators(List.of())
+				.producers(List.of())
+				.screenWriters(List.of())
+				.comments(List.of())
+				.build();
+		return filmRepository.save(filmGenerated);
 	}
 	// todo restTemplate should be replaced by userRepository
 	public Comment AddComment(Long filmId, CommentDTO commentDTO) {
@@ -303,7 +296,7 @@ public class FilmService {
 		existingFilm.setCountryProduced(filmDetails.getCountry_produced());
 		existingFilm.setDescription(filmDetails.getDescription());
 		existingFilm.setDuration(filmDetails.getDuration());
-		//existingFilm.setPoster(filmDetails.getPoster());
+		existingFilm.setPoster(filmDetails.getPoster());
 
 		return filmRepository.save(existingFilm);
 	}
@@ -342,12 +335,14 @@ public class FilmService {
 		return existingComment;
 	}
 
-	public void DeleteFilm(Long filmId) {
+	public Optional<Film> DeleteFilm(Long filmId) {
 		Optional<Film> deletedFilm = filmRepository.findById(filmId);
 
 		if (deletedFilm.isPresent()) {
 			filmRepository.deleteById(filmId);
+			return deletedFilm;
 		}
+		return null;
 	}
 
 	public Genre DeleteGenreFromMovie(Long filmId, Long genreId) {

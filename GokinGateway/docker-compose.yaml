@@ -19,7 +19,10 @@ services:
       - app-network
 
   localstack:
-    image: localstack/localstack
+    build:
+      context: ./LocalStack
+      dockerfile: ./Dockerfile
+    container_name: localstack
     ports:
       - "4566:4566"
     environment:
@@ -28,8 +31,14 @@ services:
       - EDGE_PORT=4566
       - AWS_ACCESS_KEY_ID=AKIAEXAMPLE123456789
       - AWS_SECRET_ACCESS_KEY=abcdefghIjklmnopQRSTUvwxYZ0123456789ABCD
+      - DATA_DIR=/var/lib/localstack/data
+      - PERSISTENCE=1
+      - LOCALSTACK_AUTH_TOKEN=ls-dIsa7160-yIDU-nuru-jANu-yesuLepOf656
     volumes:
+      - "./localstack_data:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - app-network
 
   eurekaservice:
     build:

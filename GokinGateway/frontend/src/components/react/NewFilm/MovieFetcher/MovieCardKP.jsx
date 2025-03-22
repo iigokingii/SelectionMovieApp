@@ -6,13 +6,13 @@ import { KinopoiskDev, MovieQueryBuilder } from '@openmoviedb/kinopoiskdev_clien
 import { Card, CardContent, CardMedia, Typography, Grid, Box } from '@mui/material';
 import { addMovie } from '../../../redux/Movies/action';
 
-const MovieCardKP = ({ movie, idx }) => {
+const MovieCardKP = ({ movie, idx, AddMovie }) => {
   const kp = new KinopoiskDev('FRS0QBR-W624BQ5-H8FVGZD-6EW7ZHY');
   const [addedMovie, setMovie] = useState({});  
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const handleClick = () => {
-    navigate(`/movie/${movie.id}`);
+    //navigate(`/movie/${movie.id}`);
   };
 
   const handleAddClick = async (event) => {
@@ -22,31 +22,32 @@ const MovieCardKP = ({ movie, idx }) => {
     const movieKP = responseKP.data;
     const convertedMovie = {
       age: movieKP.ageRating,
-      imdb_rating: movieKP.rating.imdb,
-      kinopoisk_rating: movieKP.rating.kp,
-      total_box_office: movieKP.fees.world.value || 0,
-      year_of_posting: movieKP.premiere.world,
+      imdb_rating: movieKP.rating?.imdb,
+      kinopoisk_rating: movieKP.rating?.kp,
+      total_box_office: movieKP.fees?.world?.value || 0,
+      year_of_posting: movieKP.premiere?.world,
       country_produced: movieKP.countries && movieKP.countries[0].name,
       description: movieKP.description,
       duration: movieKP.movieLength.toString(),
       original_title: movieKP.alternativeName || movieKP.name,
       title: movieKP.name,
-      poster: movieKP.poster.url
+      poster: movieKP.poster?.url
     };
 
+    const formData = new FormData();
+
+    formData.append("film", new Blob([JSON.stringify(convertedMovie)], { type: "application/json" }));
     const response = await fetch('http://localhost:8082/filmservice/api/films/film', {
       method: 'POST',
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(convertedMovie),
+      body: formData,
     });
 
     if (response.ok) {
       const addedMovieResp = await response.json();
       dispatch(addMovie(addedMovieResp));
       setMovie(addedMovieResp);
+      AddMovie(movie.id);
     }
 
     // const actors = responseKP.persons.filter(person => person.profession === 'actor');

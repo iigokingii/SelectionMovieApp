@@ -44,5 +44,5 @@ public class FilmDTO {
     String title;
 
     @Schema(description = "URL постера фильма", example = "https://example.com/poster.jpg")
-    MultipartFile poster;
+    String poster;
 }

@@ -14,6 +14,7 @@ const NewFilm = () => {
   const [isAddViaApi, setIsAddViaApi] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
+  const [preview, setPreview] = useState(null);
   const [manualMovieDetails, setManualMovieDetails] = useState({
     age: '',
     imdb_rating: '',
@@ -52,12 +53,12 @@ const NewFilm = () => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("file", file);
-    setManualMovieDetails((prevDetails) => ({
+    setManualMovieDetails(prevDetails => ({
       ...prevDetails,
-      poster: formData
-    }))
+      poster: file
+    }));
+
+    setPreview(URL.createObjectURL(file));
   };
 
 
@@ -111,7 +112,7 @@ const NewFilm = () => {
       newErrors.description = 'Описание не может превышать 2000 символов.';
     }
 
-    if (_.isNil(manualMovieDetails.poster)) {
+    if (!manualMovieDetails.poster) {
       newErrors.poster = 'Пожалуйста, загрузите постер для фильма.';
     }
 
@@ -138,7 +139,7 @@ const NewFilm = () => {
   };
   const fileInput = document.getElementById('upload-image');
   if (fileInput) {
-    fileInput.value = ''; // сбрасываем поле file
+    fileInput.value = '';
   }
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -146,15 +147,32 @@ const NewFilm = () => {
     if (!validateForm() && !openDialog) return;
 
     if (isAddViaApi) {
-    } 
+
+    }
     else {
+      const formData = new FormData();
+
+      formData.append("film", new Blob([JSON.stringify({
+        age: manualMovieDetails.age,
+        imdb_rating: manualMovieDetails.imdb_rating,
+        kinopoisk_rating: manualMovieDetails.kinopoisk_rating,
+        total_box_office: manualMovieDetails.total_box_office,
+        year_of_posting: manualMovieDetails.year_of_posting,
+        country_produced: manualMovieDetails.country_produced,
+        description: manualMovieDetails.description,
+        duration: manualMovieDetails.duration,
+        original_title: manualMovieDetails.original_title,
+        title: manualMovieDetails.title,
+      })], { type: "application/json" }));
+
+      if (manualMovieDetails.poster instanceof File) {
+        formData.append("poster", manualMovieDetails.poster);
+      }
+
       const response = await fetch('http://localhost:8082/filmservice/api/films/film', {
         method: 'POST',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(manualMovieDetails),
+        body: formData,
       });
 
       if (response.ok) {
@@ -176,7 +194,6 @@ const NewFilm = () => {
           poster: null,
         });
         setErrors({});
-      } else {
       }
     }
   };
@@ -348,7 +365,7 @@ const NewFilm = () => {
                     sx={{ marginBottom: 2, backgroundColor: '#fff' }}
                   />
                 </Box>
-                {manualMovieDetails.poster && (
+                {preview && (
                   <Box
                     sx={{
                       marginBottom: 2,
@@ -356,7 +373,7 @@ const NewFilm = () => {
                     }}
                   >
                     <img
-                      src={manualMovieDetails.poster}
+                      src={preview}
                       alt="Превью"
                       style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '8px' }}
                     />
@@ -369,7 +386,7 @@ const NewFilm = () => {
                     id="upload-image"
                     type="file"
                     style={{ display: 'none' }}
-                    onChange={async (event) => await handleFileUpload(event)}
+                    onChange={(event) => handleFileUpload(event)}
                   />
                   <Button
                     variant="contained"

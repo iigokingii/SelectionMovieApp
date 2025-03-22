@@ -1,4 +1,4 @@
-package com.example.filmservice.Service;
+package com.gokin.authservice.Service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -60,8 +60,9 @@ public class S3Service {
                             .key(fileName)
                             .build()
             );
-        } catch (NoSuchKeyException e) {
+        } catch (Exception e) {
             System.out.println("Файл не найден: " + fileName);
+            System.out.println(e.getMessage());
         }
     }
 }

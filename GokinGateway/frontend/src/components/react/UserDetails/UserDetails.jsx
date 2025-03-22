@@ -12,6 +12,7 @@ const UserDetails = () => {
     const [newUsername, setNewUsername] = useState(credentials.username);
     const [newEmail, setNewEmail] = useState(credentials.email);
     const [newAvatar, setNewAvatar] = useState(credentials.avatar);
+    const [dispAv, setDispAv] = useState(credentials.avatar);
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [errorPassword, setErrorPassword] = useState('');
@@ -23,20 +24,35 @@ const UserDetails = () => {
         setPassword(e.target.value);
     };
 
-    const handleFileUpload = (event) => {
+    // const handleFileUpload = (event) => {
+    //     const file = event.target.files[0];
+    //     if (file) {
+    //         if (!file.type.startsWith('image/')) {
+    //             setAvatarError('Пожалуйста, загрузите корректный аватар');
+    //             return;
+    //         }
+    //         const reader = new FileReader();
+    //         reader.onload = () => {
+    //             setNewAvatar(reader.result);
+    //             setAvatarError(''); // clear error when a valid file is selected
+    //         };
+    //         reader.readAsDataURL(file);
+    //     }
+    // };
+
+    const handleFileUpload = async (event) => {
         const file = event.target.files[0];
-        if (file) {
-            if (!file.type.startsWith('image/')) {
-                setAvatarError('Пожалуйста, загрузите корректный аватар');
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = () => {
-                setNewAvatar(reader.result);
-                setAvatarError(''); // clear error when a valid file is selected
-            };
-            reader.readAsDataURL(file);
+
+        if (!file) return;
+
+        if (!file.type.startsWith("image/")) {
+            setAvatarError('Пожалуйста, загрузите корректный аватар');
+            return;
         }
+
+        setNewAvatar(file);
+        setDispAv(URL.createObjectURL(file))
+        setAvatarError('');
     };
 
     const handleSubmit = async () => {
@@ -54,14 +70,34 @@ const UserDetails = () => {
         }
 
         try {
+            const formData = new FormData();
+
+            formData.append("user", new Blob([JSON.stringify({
+                id: credentials.id,
+                password,
+                username: newUsername,
+                email: newEmail,
+            })], { type: "application/json" }));
+
+            if (newAvatar instanceof File) {
+                formData.append("avatar", newAvatar ? newAvatar : credentials.avatar);
+            }
+
             const response = await fetch('http://localhost:8082/authservice/api/auth/credentials', {
                 method: 'POST',
                 credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ id: credentials.id, password, username: newUsername, email: newEmail, avatar: newAvatar? newAvatar: credentials.avatar }),
+                body: formData,
             });
+
+
+            // const response = await fetch('http://localhost:8082/authservice/api/auth/credentials', {
+            //     method: 'POST',
+            //     credentials: 'include',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //     },
+            //     body: JSON.stringify({ id: credentials.id, password, username: newUsername, email: newEmail, avatar: newAvatar? newAvatar: credentials.avatar }),
+            // });
 
             if (!response.ok) {
                 const error = await response.json();
@@ -114,7 +150,7 @@ const UserDetails = () => {
         <div className='movie-content-wrapper'>
             <div className="main-page-wrapper" style={{ alignItems: "center", justifyContent: "center" }}>
                 <Box sx={{ padding: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <Avatar src={newAvatar} alt={credentials.username} sx={{ width: 100, height: 100, mb: 2, border: '2px solid black' }} />
+                    <Avatar src={dispAv} alt={credentials.username} sx={{ width: 100, height: 100, mb: 2, border: '2px solid black' }} />
                     {!isEditing ? (
                         <>
                             <Typography variant="h5" gutterBottom>

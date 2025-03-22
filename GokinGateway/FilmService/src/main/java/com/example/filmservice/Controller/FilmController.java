@@ -2,16 +2,23 @@ package com.example.filmservice.Controller;
 
 import com.example.filmservice.DTO.*;
 import com.example.filmservice.Model.*;
+import com.example.filmservice.Repository.FilmRepository;
 import com.example.filmservice.Service.FilmService;
+import com.example.filmservice.Service.S3Service;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/films")
@@ -19,6 +26,11 @@ public class FilmController {
 
 	@Autowired
 	private FilmService filmService;
+    @Autowired
+    FilmRepository filmRepository;
+	@Autowired
+	S3Service s3Service;
+
 
 	@Operation(summary = "Получить параметры фильма для пользователя")
 	@GetMapping("/options/{userId}")
@@ -39,18 +51,44 @@ public class FilmController {
 	}
 
 	@Operation(summary = "Добавить новый фильм")
-	@PostMapping("/film")
-	public Film AddFilm(@RequestBody @Valid FilmDTO film) {
-		return filmService.AddFilm(film);
+	@PostMapping(value = "/film", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+	public ResponseEntity<Film> addFilm(
+			@RequestPart("film") FilmDTO filmDTO,
+			@RequestPart(value = "poster", required = false) MultipartFile poster) {
+		try {
+			if (poster != null) {
+				String posterUrl = s3Service.uploadFile(poster);
+				filmDTO.setPoster(posterUrl);
+			}
+			Film savedFilm = filmService.AddFilm(filmDTO);
+			return ResponseEntity.ok(savedFilm);
+		} catch (IOException e) {
+			return ResponseEntity.internalServerError().body(null);
+		}
 	}
 
-	@Operation(summary = "Обновить информацию о фильме")
-	@PostMapping("/film/{filmId}")
-	public Film updateFilm(
-			@Parameter(description = "ID фильма") @PathVariable Long filmId,
-			@RequestBody @Valid FilmDTO filmDetails) {
-		return filmService.updateFilm(filmId, filmDetails);
-	}
+    @Operation(summary = "Обновить информацию о фильме")
+    @PutMapping("/film/{filmId}")
+    public ResponseEntity<Film> updateFilm(
+            @Parameter(description = "ID фильма") @PathVariable Long filmId,
+            @RequestPart @Valid FilmDTO filmDetails,
+            @RequestPart(value = "poster", required = false) MultipartFile poster) {
+        try {
+            Optional<Film> existingFilm = filmRepository.findById(filmId);
+
+            if (poster != null && existingFilm.isPresent()) {
+                var existfilm = existingFilm.get();
+                s3Service.DeleteFile(existfilm.getPoster());
+                String newPosterUrl = s3Service.uploadFile(poster);
+                filmDetails.setPoster(newPosterUrl);
+            }
+
+            Film updatedFilm = filmService.updateFilm(filmId, filmDetails);
+            return ResponseEntity.ok(updatedFilm);
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body(null);
+        }
+    }
 	@Operation(summary = "Обновить gokin рейтинг фильма")
 	@PostMapping("/film/{filmId}/rating/{userId}")
 	public ResponseEntity<?> updateGokinRating(
@@ -64,7 +102,9 @@ public class FilmController {
 	@Operation(summary = "Удалить фильм по ID")
 	@DeleteMapping("/{filmId}")
 	public void DeleteFilm(@Parameter(description = "ID фильма") @PathVariable Long filmId) {
-		filmService.DeleteFilm(filmId);
+		var deleted = filmService.DeleteFilm(filmId);
+        if(deleted.isPresent())
+            s3Service.DeleteFile(deleted.get().getPoster());
 	}
 
 	@Operation(summary = "Добавить комментарий к фильму")

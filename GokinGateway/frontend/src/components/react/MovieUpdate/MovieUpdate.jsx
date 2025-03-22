@@ -15,6 +15,7 @@ const MovieUpdate = () => {
   const movie = movies.find((movie) => movie.id === parseInt(movieId));
   const [openDialog, setOpenDialog] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
+  const [preview, setPreview] = useState(null);
   const [description, setDescription] = React.useState('');
   const maxCharCount = 2000;
 
@@ -33,7 +34,7 @@ const MovieUpdate = () => {
     duration: '',
     original_title: '',
     title: '',
-    poster: '',
+    poster: null,
   });
 
   const [errors, setErrors] = useState({});
@@ -53,6 +54,7 @@ const MovieUpdate = () => {
         title: movie.title || '',
         poster: movie.poster || '',
       });
+      setPreview(movie.poster);
     }
   }, [movie]);
 
@@ -64,28 +66,8 @@ const MovieUpdate = () => {
     }));
   };
 
-  // const handleFileUpload = (event) => {
-  //   const file = event.target.files[0];
-  //   if (file) {
-  //     if (!file.type.startsWith("image/")) {
-  //       return;
-  //     }
-
-  //     const reader = new FileReader();
-  //     reader.onload = () => {
-  //       setMovieDetails((prevDetails) => ({
-  //         ...prevDetails,
-  //         poster: reader.result,
-  //       }));
-  //     };
-  //     reader.readAsDataURL(file);
-  //   }
-  // };
-
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
-    console.log('---------------------');
-    console.log(file);
 
     if (!file) return;
 
@@ -93,31 +75,13 @@ const MovieUpdate = () => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("file", file);
-    console.log(formData);
-    try {
-      const response = await fetch("http://localhost:8082/filmservice/api/s3/upload", {
-        method: "POST",
-        body: formData
-      });
+    setMovieDetails(prevDetails => ({
+      ...prevDetails,
+      poster: file
+    }));
 
-      if (!response.ok) {
-        throw new Error("Ошибка загрузки файла");
-      }
-
-      const imageUrl = await response.text();
-      console.log("Uploaded file URL:", imageUrl);
-
-      setMovieDetails(prevDetails => ({
-        ...prevDetails,
-        poster: imageUrl
-      }));
-    } catch (error) {
-      console.error("Upload error:", error);
-    }
+    setPreview(URL.createObjectURL(file));
   };
-
 
   const handleDialogCancel = () => {
     setOpenDialog(false);
@@ -209,14 +173,40 @@ const MovieUpdate = () => {
     if (!validateForm() && !openDialog) return;
 
     try {
+      const formData = new FormData();
+
+      // Добавляем JSON-данные как строку
+      formData.append("filmDetails", new Blob([JSON.stringify({
+        age: movieDetails.age,
+        imdb_rating: movieDetails.imdb_rating,
+        kinopoisk_rating: movieDetails.kinopoisk_rating,
+        total_box_office: movieDetails.total_box_office,
+        year_of_posting: movieDetails.year_of_posting,
+        country_produced: movieDetails.country_produced,
+        description: movieDetails.description,
+        duration: movieDetails.duration,
+        original_title: movieDetails.original_title,
+        title: movieDetails.title,
+      })], { type: "application/json" }));
+
+      if (movieDetails.poster instanceof File) {
+        formData.append("poster", movieDetails.poster);
+      }
+
       const response = await fetch(`http://localhost:8082/filmservice/api/films/film/${movie.id}`, {
-        method: 'POST',
+        method: 'PUT',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(movieDetails),
+        body: formData,
       });
+
+      // const response = await fetch(`http://localhost:8082/filmservice/api/films/film/${movie.id}`, {
+      //   method: 'POST',
+      //   credentials: 'include',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify(movieDetails),
+      // });
 
       if (response.ok) {
         const updatedMovie = await response.json();
@@ -399,10 +389,10 @@ const MovieUpdate = () => {
                   sx={{ marginBottom: 2, backgroundColor: '#fff' }}
                 />
               </Box>
-              {movieDetails.poster && (
+              {preview && (
                 <Box sx={{ marginBottom: 2, textAlign: 'center' }}>
                   <img
-                    src={movieDetails.poster}
+                    src={preview}
                     alt="Превью"
                     style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '8px' }}
                   />

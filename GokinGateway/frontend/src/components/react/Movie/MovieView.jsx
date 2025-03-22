@@ -108,12 +108,16 @@ const MovieView = () => {
               </div>
               <Box sx={{ display: "flex", flexDirection: "column" }}>
                 <Box sx={{ paddingLeft: "20px", display: "flex", alignItems: "center", marginRight: "40px" }}>
-                  <Typography>
-                    Рейтинг Кинопоиск: <span style={{ color: "gold" }}>{movie.kinopoiskRating ? movie.kinopoiskRating.toFixed(1) : 'N/A'}</span>
-                  </Typography>
-                  <Typography sx={{ marginLeft: "10px" }}>
-                    Рейтинг IMDb: <span style={{ color: "gold" }}>{movie.imdbRating ? movie.imdbRating.toFixed(1) : 'N/A'}</span>
-                  </Typography>
+                  {movie.imdbrating && (
+                    <Typography>
+                      Рейтинг Кинопоиск: <span style={{ color: "gold" }}>{movie.kinopoiskRating ? movie.kinopoiskRating.toFixed(1) : 'N/A'}</span>
+                    </Typography>
+                  )}
+                  {movie.imdbrating && (
+                    <Typography sx={{ marginLeft: "10px" }}>
+                      Рейтинг IMDb: <span style={{ color: "gold" }}>{movie.imdbrating ? movie.imdbrating.toFixed(1) : 'N/A'}</span>
+                    </Typography>
+                  )}
                   {movie.gokinRating && (
                     <Typography sx={{ marginLeft: "10px" }}>
                       Рейтинг Gokin: <span style={{ color: "gold" }}>{movie.gokinRating ? movie.gokinRating.toFixed(1) : 'N/A'}</span>

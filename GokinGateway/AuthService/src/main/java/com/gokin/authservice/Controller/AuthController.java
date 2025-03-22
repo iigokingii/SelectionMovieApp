@@ -8,6 +8,7 @@ import com.gokin.authservice.Repository.UserRepository;
 import com.gokin.authservice.Security.Service.AuthenticationService;
 import com.gokin.authservice.Security.Service.JwtTokenProvider;
 import com.gokin.authservice.Service.EmailService;
+import com.gokin.authservice.Service.S3Service;
 import com.gokin.authservice.Service.UserService;
 import io.jsonwebtoken.JwtException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,7 +26,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -50,6 +53,8 @@ public class AuthController {
 	private final UserRepository userRepository;
 	@Autowired
 	private final PasswordEncoder passwordEncoder;
+	@Autowired
+	private final S3Service s3Service;
 
 	@Operation(summary = "Регистрация пользователя", description = "Регистрирует нового пользователя в системе.")
 	@PostMapping("/auth/sign-up")
@@ -157,9 +162,22 @@ public class AuthController {
 	public ResponseEntity<SignUpResponse> updateUser(
 			HttpServletRequest request,
 			HttpServletResponse response,
-			@RequestBody UserDTO user) {
-		SignUpResponse credentials = authenticationService.updateCredentials(request, response, user);
-		return ResponseEntity.ok(credentials);
+			@RequestPart @Valid UserDTO user,
+			@RequestPart(value = "avatar", required = false) MultipartFile avatar) {
+		try{
+			var existingUser = userRepository.findById(user.getId());
+			if (existingUser.isPresent() && avatar!=null) {
+				s3Service.DeleteFile(existingUser.get().getAvatar());
+				var s3Path = s3Service.uploadFile(avatar);
+				user.setAvatar(s3Path);
+			}
+
+			SignUpResponse credentials = authenticationService.updateCredentials(request, response, user);
+			return ResponseEntity.ok(credentials);
+		} catch (
+		IOException e) {
+			return ResponseEntity.internalServerError().body(null);
+		}
 	}
 
 	@Operation(summary = "Выход из системы", description = "Удаляет токены и завершает сессию пользователя.")
